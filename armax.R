@@ -40,6 +40,17 @@ Y   = targetVec(y,na,nb)
 
 th_hat = ginv(Phi) %*% Y
 
+df_dataset = tibble(time = 1:N,
+                        y = y,
+                        yor = yor,
+                        u = u) %>%
+  gather(variable, measurement, -time)
+
+ggplot(data=filter(df_dataset,variable %in% c("y","yor"))) + 
+  geom_line(aes(x = time,y =measurement,color=variable))
+
+ggplot(data=filter(df_dataset,variable %in% c("u"))) + 
+  geom_line(aes(x = time,y =measurement,color=variable))
 
 
 
