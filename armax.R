@@ -86,8 +86,8 @@ for (i in 1:niter){
   th_ARX_hat = th_ARMAX_hat[1:(na+nb)]
 }
 
-plot(dlt1,main="armax theta convergence (log scale)")#,log="y")
-plot(dlt2,main="armax error convergence (log scale)")#,log="y")
+plot(dlt1,main="armax theta convergence (log scale)",log="y")
+plot(dlt2,main="armax error convergence (log scale)",log="y")
 
 # calculate predictions ---------------------------------------------------
 ye_osa = calcOSA_ARMAX(ye,ue,na,nb,nc,p,th_ARMAX_hat)
@@ -95,13 +95,11 @@ ye_fr  = calcFR_ARX(ye,ue,na,nb,p,th_ARX_hat)
 yv_osa = calcOSA_ARMAX(yv,uv,na,nb,nc,p,th_ARMAX_hat)
 yv_fr  = calcFR_ARX(yv,uv,na,nb,p,th_ARX_hat)
 
+# prediction performance
 R2e_osa = calcR2(Ye,ye_osa)
 R2e_fr  = calcR2(Ye,ye_fr)
 R2v_osa = calcR2(Yv,yv_osa)
 R2v_fr  = calcR2(Yv,yv_fr)
-
-# prediction performance
-
 
 # create tibbles for plotting ---------------------------------------------
 
