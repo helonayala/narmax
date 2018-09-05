@@ -96,46 +96,46 @@ p = c(p,list(
   ggplot(data=filter(df_dataset,variable %in% c("ue","uv"))) +
     geom_line(aes(x = time,y =measurement,color=variable)) +
     ggtitle("Input"))
-  )
+)
 
 p = c(p,list(
   ggplot(data=filter(df_dataset,variable %in% c("ye","yeor"))) + 
-  geom_line(aes(x = time,y =measurement,color=variable)) + 
-  ggtitle("Output (estimation)"))
-  )
+    geom_line(aes(x = time,y =measurement,color=variable)) + 
+    ggtitle("Output (estimation)"))
+)
 
 p = c(p,list(
   ggplot(data=filter(df_dataset,variable %in% c("yv","yvor"))) + 
-  geom_line(aes(x = time,y =measurement,color=variable)) + 
-  ggtitle("Output (valitation)"))
-  )
+    geom_line(aes(x = time,y =measurement,color=variable)) + 
+    ggtitle("Output (valitation)"))
+)
 
 p = c(p,list(
   ggplot(data=filter(df_all,variable %in% c("ye","ye_osa","ye_fr"))) + 
-  geom_line(aes(x = time,y =measurement,color=variable)) + 
-  ggtitle("predictions (estimation"))
-  )
+    geom_line(aes(x = time,y =measurement,color=variable)) + 
+    ggtitle("predictions (estimation"))
+)
 
 p = c(p,list(
   ggplot(data=filter(df_all,variable %in% c("yv","yv_osa","yv_fr"))) + 
-  geom_line(aes(x = time,y =measurement,color=variable)) + 
-  ggtitle("predictions (validation"))
-  )
+    geom_line(aes(x = time,y =measurement,color=variable)) + 
+    ggtitle("predictions (validation"))
+)
 
 p = c(p,list(
-    ggplot(data=filter(df_error,variable %in% c("ee_osa","ee_fr"))) + 
-  geom_line(aes(x = time,y =measurement,color=variable)) + 
-  ggtitle("prediction residuals (estimation)"))
-  )
+  ggplot(data=filter(df_error,variable %in% c("ee_osa","ee_fr"))) + 
+    geom_line(aes(x = time,y =measurement,color=variable)) + 
+    ggtitle("prediction residuals (estimation)"))
+)
 
 p = c(p,list(
-    ggplot(data=filter(df_error,variable %in% c("ev_osa","ev_fr"))) + 
-  geom_line(aes(x = time,y =measurement,color=variable)) + 
-  ggtitle("prediction residuals (validation)"))
-  )
+  ggplot(data=filter(df_error,variable %in% c("ev_osa","ev_fr"))) + 
+    geom_line(aes(x = time,y =measurement,color=variable)) + 
+    ggtitle("prediction residuals (validation)"))
+)
 
 print(p)
-  
+
 
 
 

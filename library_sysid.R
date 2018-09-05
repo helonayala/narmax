@@ -39,3 +39,83 @@ targetVec = function(y,na,nb){
   Y = y[p:N]
   return(Y)
 }
+
+calcFR_ARX = function(y,u,na,nb){
+  
+  p = 1+max(na,nb)
+  
+  y_fr = y[1:(p-1)]
+  u_fr = u[1:(p-1)]
+  for (k in p:N){
+    phi_k = regMatrix(c(y_fr[(k-p+1):(k-1)],0),c(u_fr[(k-p+1):(k-1)],0),na,nb)
+    y_fr[k] = phi_k %*% th_hat
+    u_fr[k] = u[k]
+  }
+  y_fr = y_fr[p:N]
+  
+  return(y_fr)
+}
+
+db = function(X){
+  X = abs(X)^2
+  # from matlab function:
+  # We want to guarantee that the result is an integer
+  # if X is a negative power of 10.  To do so, we force
+  # some rounding of precision by adding 300-300.
+  
+  Y = (10*log10(X)+300)-300;
+  
+}
+
+randnoise = function(N,cutoff){
+  # generate low-pass filtered random noise 
+  
+  # N number of samples
+  # cutoff cutoff normalized frequency
+  
+  # adapted from Pintelon,Schoukens book
+  
+  bf = butter(6, cutoff, type="low")
+  u  = signal::filter(bf, rnorm(N,mean=0,sd=1))
+  
+  return (u)
+}
+
+multisine = function(Ndata1,cuoff){
+  # generate low-pass filtered random noise 
+  
+  # N number of samples
+  # cutoff cutoff normalized frequency
+  
+  # adapted from Pintelon,Schoukens book
+  
+  fsample = 1 # use normalized frequency
+  Ts = 1/fsample
+  Nsines = round(Ndata1*cutoff)
+  f=(0:(Ndata1-1))*fsample/Ndata1
+  
+  U = matrix(0,Ndata1,1)
+  U[2:(Nsines+1)] = exp(1i*2*pi*runif(Nsines));
+  u=2*Re(ifft(U))
+  u=u/sd(u)
+
+  return(u[,])
+}
+
+M_spec = function(u,title = 'u'){
+  # returns matrix for ploting signal spectra
+  
+  # adapted from Pintelon,Schoukens book
+  
+  Ndata1 = length(u)
+  
+  Um=fft(u)/sqrt(Ndata1)
+  
+  f = (0:(Ndata1-1))/Ndata1
+  LinesPlot=(1:floor(Ndata1/2))
+  
+  plot(f[LinesPlot],db(Um[LinesPlot]),xlab =  'Frequency (normalized)', ylab =  'Amplitude (dB)', main = title)
+}
+
+
+  
