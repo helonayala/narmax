@@ -1,4 +1,5 @@
 regMatrix = function(y,u,na,nb){
+  # creates the regression matrix
   
   N = length(y)
   
@@ -26,4 +27,15 @@ regMatrix = function(y,u,na,nb){
   rownames(Phi) = rowPhi
   
   return(Phi)
+}
+
+targetVec = function(y,na,nb){
+  # returns the target vector
+  
+  p = 1+max(na,nb)
+
+  N = length(y)
+    
+  Y = y[p:N]
+  return(Y)
 }
