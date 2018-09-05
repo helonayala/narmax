@@ -21,14 +21,14 @@ set.seed(42)
 #model parameters
 na = 4
 nb = 3
-nc = 4
+nc = 2
 p  = 1 + max(na,nb,nc)
 sd_noise = 1e-2
 
 # generate input-output data ----------------------------------------------
 N = 1000 # number of samples
 cutoff = 0.1 # normalized frequency cutoff
-
+th = c(0.3,0.5,0.1,0.4,0.2,0.32,0.1)
 # create input signal
 ue = multisine(N,cutoff)
 uv = randnoise(N,cutoff)
@@ -40,8 +40,10 @@ ye = array(0,N)
 yv = array(0,N)
 
 for (k in 5:N){
-  ye[k] = -0.3*ye[k-1] -0.5*ye[k-2] -0.1*ye[k-3] - 0.4*ye[k-4] + 0.2*ue[k-1] + 0.32*ue[k-2] + 0.1*ue[k-3]
-  yv[k] = -0.3*yv[k-1] -0.5*yv[k-2] -0.1*yv[k-3] - 0.4*yv[k-4] + 0.2*uv[k-1] + 0.32*uv[k-2] + 0.1*uv[k-3]
+  phie = c(-ye[k-1],-ye[k-2],-ye[k-3],-ye[k-4],ue[k-1],ue[k-2],ue[k-3])
+  phiv = c(-yv[k-1],-yv[k-2],-yv[k-3],-yv[k-4],uv[k-1],uv[k-2],uv[k-3])
+  ye[k] = phie %*% th
+  yv[k] = phiv %*% th
 }
 yeor = ye
 ye = rnorm(N,mean=ye,sd=sd_noise)
@@ -55,21 +57,37 @@ Phiv = regMatrix_ARX(yv,uv,na,nb,p)
 Yv   = targetVec(yv,p)
 
 # estimate parameters -----------------------------------------------------
-niter = 100
+niter = 10
 Th_ARMAX_hat = matrix(0,na+nb+nc,niter)
 th_ARX_hat = ginv(Phie) %*% Ye
 th_ARX_hat0 = th_ARX_hat
+th_ARMAX_hat0 = c(th_ARX_hat0,rep(0,nc))
+ee_s1 = c(rep(0,p-1),Phie %*% th_ARX_hat)
+dlt1 = rep(0,niter)
+dlt2 = rep(0,niter)
+
 for (i in 1:niter){
-  # calculate error and pad zeros for the initial conditions
-  ee = c(rep(0,p-1),Ye - (Phie %*% th_ARX_hat)[,])
   
-  Phie_ext = regMatrix_MA(ye,ue,ee,na,nb,nc,p)
+  Phie_ext = regMatrix_MA(ye,ue,ee_s1,na,nb,nc,p)
   
   th_ARMAX_hat = ginv(Phie_ext) %*% Ye
   
-  th_ARX_hat = th_ARMAX_hat[1:(na+nb)]
+  # --- stop conditions
+  dlt1[i] = sqrt(sum((th_ARMAX_hat - th_ARMAX_hat0)^2))
+  th_ARMAX_hat0 = th_ARMAX_hat
+  
+  # calculate error and pad zeros for the initial conditions
+  ee_s = ee_s1
+  ee_s1 = c(rep(0,p-1),Ye - (Phie_ext %*% th_ARMAX_hat)[,])
+  dlt2[i] = sqrt(sum((ee_s1 - ee_s)^2))
+  
+  # save estimated vectors
   Th_ARMAX_hat[,i] = th_ARMAX_hat
+  th_ARX_hat = th_ARMAX_hat[1:(na+nb)]
 }
+
+plot(dlt1,main="armax theta convergence (log scale)")#,log="y")
+plot(dlt2,main="armax error convergence (log scale)")#,log="y")
 
 # calculate predictions ---------------------------------------------------
 ye_osa = calcOSA_ARMAX(ye,ue,na,nb,nc,p,th_ARMAX_hat)
