@@ -1,4 +1,4 @@
-regMatrix = function(y,u,na,nb){
+regMatrix_ARX = function(y,u,na,nb,p){
   # creates the regression matrix
   
   N = length(y)
@@ -6,9 +6,7 @@ regMatrix = function(y,u,na,nb){
   if (N != length(u)) {
     stop("input-output vectors should have the same size")
   }
-  
-  p = 1 + max(na,nb)
-  
+
   Phi = matrix(0, nrow = N-p+1, ncol = na+nb)
   
   colPhi = NULL
@@ -29,27 +27,77 @@ regMatrix = function(y,u,na,nb){
   return(Phi)
 }
 
-targetVec = function(y,na,nb){
+regMatrix_MA = function(y,u,e,na,nb,nc,p){
+  # creates the regression matrix
+  
+  N = length(y)
+  
+  if (N != length(u) || N != length(e))  {
+    stop("input vectors should have the same size")
+  }
+  
+  Phi = matrix(0, nrow = N-p+1, ncol = na+nb+nc)
+  
+  colPhi = NULL
+  for(i in 1:na){
+    Phi[,i] = -y[(p-i):(N-i)]
+    colPhi = c(colPhi,paste0("-y(k-",i,")"))
+  }
+  for(i in 1:nb){
+    Phi[,na+i] = u[(p-i):(N-i)]
+    colPhi = c(colPhi,paste0("u(k-",i,")"))
+  }
+  for(i in 1:nc){
+    Phi[,na+nb+i] = e[(p-i):(N-i)]
+    colPhi = c(colPhi,paste0("e(k-",i,")"))
+  }
+  
+  rowPhi = paste0(rep("k=",N-p+1),p:N)
+  
+  colnames(Phi) = colPhi
+  rownames(Phi) = rowPhi
+  
+  return(Phi)
+}
+
+targetVec = function(y,p){
   # returns the target vector
   
-  p = 1+max(na,nb)
-
   N = length(y)
     
   Y = y[p:N]
   return(Y)
 }
 
-calcFR_ARX = function(y,u,na,nb){
-  
-  p = 1+max(na,nb)
+calcFR_ARX = function(y,u,na,nb,p,th_hat){
   
   y_fr = y[1:(p-1)]
   u_fr = u[1:(p-1)]
+  
   for (k in p:N){
-    phi_k = regMatrix(c(y_fr[(k-p+1):(k-1)],0),c(u_fr[(k-p+1):(k-1)],0),na,nb)
+    phi_k = regMatrix_ARX(c(y_fr[(k-p+1):(k-1)],0),c(u_fr[(k-p+1):(k-1)],0),na,nb,p)
     y_fr[k] = phi_k %*% th_hat
     u_fr[k] = u[k]
+  }
+  y_fr = y_fr[p:N]
+  
+  return(y_fr)
+}
+
+calcOSA_ARMAX = function(y,u,na,nb,nc,p,th_hat){
+  
+  y_fr = y[1:(p-1)]
+  u_fr = u[1:(p-1)]
+  e_fr = rep(0,p-1)
+  
+  for (k in p:N){
+    auxy = c(y_fr[(k-p+1):(k-1)],0)
+    auxu = c(u_fr[(k-p+1):(k-1)],0)
+    auxe = c(e_fr[(k-p+1):(k-1)],0)
+    phi_k = regMatrix_MA(auxy,auxu,auxe,na,nb,nc,p)
+    y_fr[k] = phi_k %*% th_hat
+    u_fr[k] = u[k]
+    e_fr[k] = y[k] - y_fr[k]
   }
   y_fr = y_fr[p:N]
   
@@ -96,8 +144,8 @@ multisine = function(Ndata1,cuoff){
   
   U = matrix(0,Ndata1,1)
   U[2:(Nsines+1)] = exp(1i*2*pi*runif(Nsines));
-  u=2*Re(ifft(U))
-  u=u/sd(u)
+  u = 2*Re(ifft(U))
+  u = u/sd(u)
 
   return(u[,])
 }
@@ -117,5 +165,16 @@ M_spec = function(u,title = 'u'){
   plot(f[LinesPlot],db(Um[LinesPlot]),xlab =  'Frequency (normalized)', ylab =  'Amplitude (dB)', main = title)
 }
 
-
+calcR2 = function(real,est){
+  
+  SSE = sum((real - est)^2)
+  
+  avg_real = mean(real)
+  
+  sum2 = sum((real - avg_real)^2)
+  
+  R2 = 1 - SSE / sum2
+  
+  return(R2)
+}  
   

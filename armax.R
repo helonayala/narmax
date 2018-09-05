@@ -21,8 +21,9 @@ set.seed(42)
 #model parameters
 na = 4
 nb = 3
-p  = 1 + max(na,nb)
-sd_noise = 1e-1
+nc = 4
+p  = 1 + max(na,nb,nc)
+sd_noise = 1e-2
 
 # generate input-output data ----------------------------------------------
 N = 1000 # number of samples
@@ -38,7 +39,7 @@ uv = randnoise(N,cutoff)
 ye = array(0,N)
 yv = array(0,N)
 
-for (k in p:N){
+for (k in 5:N){
   ye[k] = -0.3*ye[k-1] -0.5*ye[k-2] -0.1*ye[k-3] - 0.4*ye[k-4] + 0.2*ue[k-1] + 0.32*ue[k-2] + 0.1*ue[k-3]
   yv[k] = -0.3*yv[k-1] -0.5*yv[k-2] -0.1*yv[k-3] - 0.4*yv[k-4] + 0.2*uv[k-1] + 0.32*uv[k-2] + 0.1*uv[k-3]
 }
@@ -47,19 +48,42 @@ ye = rnorm(N,mean=ye,sd=sd_noise)
 yvor = yv
 yv = rnorm(N,mean=yv,sd=sd_noise)
 
-Phie = regMatrix(ye,ue,na,nb)
-Ye   = targetVec(ye,na,nb)
-Phiv = regMatrix(yv,uv,na,nb)
-Yv   = targetVec(yv,na,nb)
+Phie = regMatrix_ARX(ye,ue,na,nb,p)
+Ye   = targetVec(ye,p)
+
+Phiv = regMatrix_ARX(yv,uv,na,nb,p)
+Yv   = targetVec(yv,p)
 
 # estimate parameters -----------------------------------------------------
-th_hat = ginv(Phie) %*% Ye
+niter = 100
+Th_ARMAX_hat = matrix(0,na+nb+nc,niter)
+th_ARX_hat = ginv(Phie) %*% Ye
+th_ARX_hat0 = th_ARX_hat
+for (i in 1:niter){
+  # calculate error and pad zeros for the initial conditions
+  ee = c(rep(0,p-1),Ye - (Phie %*% th_ARX_hat)[,])
+  
+  Phie_ext = regMatrix_MA(ye,ue,ee,na,nb,nc,p)
+  
+  th_ARMAX_hat = ginv(Phie_ext) %*% Ye
+  
+  th_ARX_hat = th_ARMAX_hat[1:(na+nb)]
+  Th_ARMAX_hat[,i] = th_ARMAX_hat
+}
 
 # calculate predictions ---------------------------------------------------
-ye_osa = (Phie %*% th_hat)[,]
-ye_fr = calcFR_ARX(ye,ue,na,nb)
-yv_osa = (Phiv %*% th_hat)[,]
-yv_fr = calcFR_ARX(yv,uv,na,nb)
+ye_osa = calcOSA_ARMAX(ye,ue,na,nb,nc,p,th_ARMAX_hat)
+ye_fr  = calcFR_ARX(ye,ue,na,nb,p,th_ARX_hat)
+yv_osa = calcOSA_ARMAX(yv,uv,na,nb,nc,p,th_ARMAX_hat)
+yv_fr  = calcFR_ARX(yv,uv,na,nb,p,th_ARX_hat)
+
+R2e_osa = calcR2(Ye,ye_osa)
+R2e_fr  = calcR2(Ye,ye_fr)
+R2v_osa = calcR2(Yv,yv_osa)
+R2v_fr  = calcR2(Yv,yv_fr)
+
+# prediction performance
+
 
 # create tibbles for plotting ---------------------------------------------
 
@@ -92,34 +116,34 @@ df_all = bind_rows(df_dataset,df_pred)
 # plots -------------------------------------------------------------------
 p = list()
 
-p = c(p,list(
-  ggplot(data=filter(df_dataset,variable %in% c("ue","uv"))) +
-    geom_line(aes(x = time,y =measurement,color=variable)) +
-    ggtitle("Input"))
-  )
+# p = c(p,list(
+#   ggplot(data=filter(df_dataset,variable %in% c("ue","uv"))) +
+#     geom_line(aes(x = time,y =measurement,color=variable)) +
+#     ggtitle("Input"))
+#   )
 
-p = c(p,list(
-  ggplot(data=filter(df_dataset,variable %in% c("ye","yeor"))) + 
-  geom_line(aes(x = time,y =measurement,color=variable)) + 
-  ggtitle("Output (estimation)"))
-  )
-
-p = c(p,list(
-  ggplot(data=filter(df_dataset,variable %in% c("yv","yvor"))) + 
-  geom_line(aes(x = time,y =measurement,color=variable)) + 
-  ggtitle("Output (valitation)"))
-  )
+# p = c(p,list(
+#   ggplot(data=filter(df_dataset,variable %in% c("ye","yeor"))) + 
+#   geom_line(aes(x = time,y =measurement,color=variable)) + 
+#   ggtitle("Output (estimation)"))
+#   )
+# 
+# p = c(p,list(
+#   ggplot(data=filter(df_dataset,variable %in% c("yv","yvor"))) + 
+#   geom_line(aes(x = time,y =measurement,color=variable)) + 
+#   ggtitle("Output (validation)"))
+#   )
 
 p = c(p,list(
   ggplot(data=filter(df_all,variable %in% c("ye","ye_osa","ye_fr"))) + 
   geom_line(aes(x = time,y =measurement,color=variable)) + 
-  ggtitle("predictions (estimation"))
+  ggtitle(paste0("predictions (estimation) - R2 osa = ",R2e_osa," R2 fr = ",R2e_fr)))
   )
 
 p = c(p,list(
   ggplot(data=filter(df_all,variable %in% c("yv","yv_osa","yv_fr"))) + 
-  geom_line(aes(x = time,y =measurement,color=variable)) + 
-  ggtitle("predictions (validation"))
+  geom_line(aes(x = time,y =measurement,color=variable)) +  
+  ggtitle(paste0("predictions (validation) - R2 osa = ",R2v_osa," R2 fr = ",R2v_fr)))
   )
 
 p = c(p,list(

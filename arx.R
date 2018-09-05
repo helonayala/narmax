@@ -47,19 +47,19 @@ ye = rnorm(N,mean=ye,sd=sd_noise)
 yvor = yv
 yv = rnorm(N,mean=yv,sd=sd_noise)
 
-Phie = regMatrix(ye,ue,na,nb)
-Ye   = targetVec(ye,na,nb)
-Phiv = regMatrix(yv,uv,na,nb)
-Yv   = targetVec(yv,na,nb)
+Phie = regMatrix_ARX(ye,ue,na,nb,p)
+Ye   = targetVec(ye,p)
+Phiv = regMatrix_ARX(yv,uv,na,nb,p)
+Yv   = targetVec(yv,p)
 
 # estimate parameters -----------------------------------------------------
 th_hat = ginv(Phie) %*% Ye
 
 # calculate predictions ---------------------------------------------------
 ye_osa = (Phie %*% th_hat)[,]
-ye_fr = calcFR_ARX(ye,ue,na,nb)
+ye_fr = calcFR_ARX(ye,ue,na,nb,p,th_hat)
 yv_osa = (Phiv %*% th_hat)[,]
-yv_fr = calcFR_ARX(yv,uv,na,nb)
+yv_fr = calcFR_ARX(yv,uv,na,nb,p,th_hat)
 
 # create tibbles for plotting ---------------------------------------------
 
