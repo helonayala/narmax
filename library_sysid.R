@@ -204,6 +204,7 @@ CGS = function(P) {
   }
   # THE END
   
+  out = list()
   # format output
   out$A = A
   out$Q = Q
