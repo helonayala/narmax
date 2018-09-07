@@ -178,3 +178,34 @@ calcR2 = function(real,est){
   return(R2)
 }  
   
+
+CGS = function(P) {
+  # Classical Gram-Schimidt factorization
+  # obtains P = Q * A
+  # where P is N x Nth
+  # so that
+  # Q is a N x Nth matrix with orthogonal columns 
+  # A is a Nth x Nth unit upper triangular matrix
+  
+  N   = nrow(P)
+  Nth = ncol(P)
+  
+  # init matrix
+  A = eye(Nth)
+  Q = matrix(0,nrow =N, ncol = Nth)
+  Q[,1] = P[,1]
+  for (i in 2:Nth) {
+    Q[,i] = P[,i] 
+    for (j in 1:(i-1)){
+      disp(j,i)
+      A[j,i] = (Q[,j] %*% P[,i]) / (Q[,j] %*% Q[,j])
+      Q[,i] = Q[,i] - A[j,i] * Q[,j]
+    }
+  }
+  # THE END
+  
+  # format output
+  out$A = A
+  out$Q = Q
+  return(out)
+}
