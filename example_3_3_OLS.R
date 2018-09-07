@@ -5,8 +5,8 @@
 # example 3.3- billings 2013
 
 rm(list=ls()) # remove all vars and functions
-cat("\014")   # clean console
 while(!is.null(dev.list())) dev.off()     # clear all graphs
+cat("\014")   # clean console
 
 source("library_sysid.R")
 
@@ -28,11 +28,13 @@ th_ls = ginv(P) %*% Y # see text in example 3.3, below eq. 3.22
 # orthogonal least squares
 
 # -- remove the predictors here
-P = P[,c(1,2,3)] # true theta
+#P = P[,c(1,2,3)] # true theta
 
 niter = ncol(P)
 
-out = CGS(P)
+# out = CGS(P) # classical Gram-Schmidt
+out = MGS(P) # modified Gram-Schmidt
+
 W = out$Q
 A = out$A
 
@@ -53,6 +55,7 @@ for (i in 1:niter){
 th_OLS = solve(A,g)
 
 disp('OLS estimated parameters',th_OLS)
+disp('ERR estimated parameters',ERR)
 # CONCLUSION
 # 1- the ERR values are not the same (confronting with table 3.2)
 # 2- the values for th are the same for Table 3.2, varying the terms
