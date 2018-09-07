@@ -197,7 +197,7 @@ CGS = function(P) {
   for (i in 2:Nth) {
     Q[,i] = P[,i] 
     for (j in 1:(i-1)){
-      disp(j,i)
+      # disp(j,i)
       A[j,i] = (Q[,j] %*% P[,i]) / (Q[,j] %*% Q[,j])
       Q[,i] = Q[,i] - A[j,i] * Q[,j]
     }
