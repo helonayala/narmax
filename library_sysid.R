@@ -181,6 +181,7 @@ calcR2 = function(real,est){
 
 CGS = function(P) {
   # Classical Gram-Schimidt factorization
+  # Aguirre 2015 book
   # obtains P = Q * A
   # where P is N x Nth
   # so that
@@ -203,6 +204,43 @@ CGS = function(P) {
     }
   }
   # THE END
+  
+  out = list()
+  # format output
+  out$A = A
+  out$Q = Q
+  return(out)
+}
+
+
+MGS = function(P) {
+  # Modified Gram-Schimidt factorization
+  # Aguirre 2015 book
+  # obtains P = Q * A
+  # where P is N x Nth
+  # so that
+  # Q is a N x Nth matrix with orthogonal columns 
+  # A is a Nth x Nth unit upper triangular matrix
+  
+  N   = nrow(P)
+  Nth = ncol(P)
+  
+  # init matrix
+  A = eye(Nth)
+  P_i_1 = P
+  Q = matrix(0,nrow =N, ncol = Nth)
+  P_i  = matrix(0,nrow = N,ncol = Nth)
+  for (i in 1:(Nth-1)) {
+    Q[,i] = P_i_1[,i]
+    for (j in (i+1):Nth){
+      disp(j,i)
+      A[i,j] = (Q[,i] %*% P_i_1[,j]) / (Q[,i] %*% Q[,i])
+      P_i[,j] = P_i_1[,j] - A[i,j] * Q[,i]
+    }
+    P_i_1 = P_i
+  }
+  # THE END
+  Q[,Nth] = P_i_1[,Nth]
   
   out = list()
   # format output
