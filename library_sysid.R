@@ -248,3 +248,22 @@ MGS = function(P) {
   out$Q = Q
   return(out)
 }
+
+regMatNARX = function(nu,ny,l){
+  
+  n = nu+ny
+  
+  auxexp = list()
+  candlist = list()
+  
+  for(i in 1:l){
+    eval(parse(text=paste0("auxexp$x",i,"=1:n"))) # generate input args for expand.grid
+    cand = do.call(expand.grid,auxexp) # call expand.grid for changing number of arguments
+    
+    cand = t(apply(cand,1,sort)) # order each row of the matrix
+    cand = unique(cand) # keep unique rows
+    eval(parse(text=paste0("candlist$l",i,"=cand"))) # keep candidates
+  }
+  
+  return(candlist)
+}

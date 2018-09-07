@@ -29,6 +29,8 @@ n = nu + ny + ne
 ncan = 0
 canl = NULL
 
+Phi = regMatNARX(nu,ny,l)
+
 canl3 = expand.grid(1:n,1:n,1:n)
 canl2 = expand.grid(1:n,1:n)
 canl1 = expand.grid(1:n)
@@ -39,7 +41,6 @@ canl2_a = t(apply(canl2,1,sort)) # order each row
 canl2_b = unique(canl2_a) # keep unique values
 canl1_a = t(apply(canl1,1,sort)) # order each row
 canl1_b = unique(canl1_a) # keep unique values
-
 
 canl1_b
 canl2_b
