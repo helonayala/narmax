@@ -65,7 +65,11 @@ targetVec = function(y,p){
   
   N = length(y)
     
-  Y = y[p:N]
+  Y = matrix(y[p:N],ncol = 1)
+  
+  rownames(Y) = paste0(rep("k=",N-p+1),p:N)
+  colnames(Y) = "y(k)"
+  
   return(Y)
 }
 
@@ -249,21 +253,38 @@ MGS = function(P) {
   return(out)
 }
 
-regMatNARX = function(nu,ny,l){
-  
+regMatNARX = function(u,y,nu,ny,l){
   n = nu+ny
-  
+  p = max(nu,ny)+1
   auxexp = list()
   candlist = list()
-  
+  # generate all terms product combinations possible
   for(i in 1:l){
     eval(parse(text=paste0("auxexp$x",i,"=1:n"))) # generate input args for expand.grid
     cand = do.call(expand.grid,auxexp) # call expand.grid for changing number of arguments
     
     cand = t(apply(cand,1,sort)) # order each row of the matrix
     cand = unique(cand) # keep unique rows
-    eval(parse(text=paste0("candlist$l",i,"=cand"))) # keep candidates
+    candlist[[i]] = cand
   }
   
-  return(candlist)
+  P0 = regMatrix_ARX(y,u,ny,nu,p) # creates the initial regression matrix (with ARX terms)
+  P0[,1:ny] = -P0[,1:ny] # fix -y(k-..) from arx modeling
+  colnames(P0) = c(paste0("y(k-",1:ny,")"),paste0("u(k-",1:nu,")")) # fix column names
+  NP = nrow(P0)
+  P = NULL # here we store the final NARX regression matrix 
+  P = cbind(rep(1,NP), P) # constant term
+  colnames(P) = "constant"
+  P = cbind(P, P0) # l = 1, trivial
+  
+  for (i in 2:l){
+    ncand = nrow(candlist[[i]])
+    for(j in 1:ncand){
+      Pcand_a = P0[,candlist[[i]][j,]]
+      Pcand_b = matrix(apply(Pcand_a,1,prod),ncol = 1)
+      colnames(Pcand_b) = str_c(colnames(P0[,candlist[[i]][j,]]),collapse = "")
+      P = cbind(P,Pcand_b)
+    }
+  }
+  return(P)
 }
