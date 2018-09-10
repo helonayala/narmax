@@ -26,10 +26,8 @@ ne = 0
 l = 3
 n = nu + ny + ne
 p = max(nu,ny,nu)+1
-# candidate
-ncan = 0
-canl = NULL
 
+# create regression and target matrices -----------------------------------
 Phi = regMatNARX(u,y,nu,ny,l)
 Y = targetVec(y,p)
 
