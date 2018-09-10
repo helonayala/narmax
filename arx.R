@@ -80,10 +80,10 @@ df_pred = tibble(time = p:N,
   gather(variable, measurement, -time)
 
 df_error = tibble(time = p:N,
-                  ee_osa = Ye - ye_osa,
-                  ee_fr  = Ye - ye_fr,
-                  ev_osa = Yv - yv_osa,
-                  ev_fr  = Yv - yv_fr) %>%
+                  ee_osa = (Ye - ye_osa)[,],
+                  ee_fr  = (Ye - ye_fr)[,],
+                  ev_osa = (Yv - yv_osa)[,],
+                  ev_fr  = (Yv - yv_fr)[,]) %>%
   gather(variable, measurement, -time)
 
 df_all = bind_rows(df_dataset,df_pred)
