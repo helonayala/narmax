@@ -8,6 +8,7 @@ rm(list=ls()) # remove all vars and functions
 while(!is.null(dev.list())) dev.off()     # clear all graphs
 cat("\014")   # clean console
 
+library(MASS)
 source("library_sysid.R")
 
 # table 3.1
@@ -28,7 +29,9 @@ th_ls = ginv(P) %*% Y # see text in example 3.3, below eq. 3.22
 # orthogonal least squares
 
 # -- remove the predictors here
-#P = P[,c(1,2,3)] # true theta
+# P = P[,c(3,1)] # FIRST LINE IN TABLE 3.2
+# P = P[,c(3,1,2)] # SECOND LINE IN TABLE 3.2
+P = P[,c(3,1,2,4)] # SECOND LINE IN TABLE 3.2
 
 niter = ncol(P)
 
@@ -54,10 +57,14 @@ for (i in 1:niter){
 
 th_OLS = solve(A,g)
 
-disp('OLS estimated parameters',th_OLS)
-disp('ERR estimated parameters',ERR)
+print('OLS estimated parameters')
+print(th_OLS)
+print('ERR estimated parameters')
+print(ERR)
+
+
 # CONCLUSION
-# 1- the ERR values are not the same (confronting with table 3.2)
+# 1- the ERR values are the same (confronting with table 3.2)
 # 2- the values for th are the same for Table 3.2, varying the terms
 # 3- it should be fine
 
