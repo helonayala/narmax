@@ -196,7 +196,7 @@ CGS = function(P) {
   Nth = ncol(P)
   
   # init matrix
-  A = eye(Nth)
+  A = diag(1,nrow = Nth)
   Q = matrix(0,nrow =N, ncol = Nth)
   Q[,1] = P[,1]
   for (i in 2:Nth) {
@@ -230,14 +230,14 @@ MGS = function(P) {
   Nth = ncol(P)
   
   # init matrix
-  A = eye(Nth)
+  A = diag(1,nrow = Nth)
   P_i_1 = P
   Q = matrix(0,nrow =N, ncol = Nth)
   P_i  = matrix(0,nrow = N,ncol = Nth)
   for (i in 1:(Nth-1)) {
     Q[,i] = P_i_1[,i]
     for (j in (i+1):Nth){
-      disp(j,i)
+      #disp(j,i)
       A[i,j] = (Q[,i] %*% P_i_1[,j]) / (Q[,i] %*% Q[,i])
       P_i[,j] = P_i_1[,j] - A[i,j] * Q[,i]
     }
