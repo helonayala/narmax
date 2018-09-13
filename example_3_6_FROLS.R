@@ -28,7 +28,7 @@ ny = 2
 ne = 0
 l = 3
 n = nu + ny + ne
-p = max(nu,ny,nu)+1
+p = max(nu,ny,ne)+1
 
 # create regression and target matrices -----------------------------------
 P = regMatNARX(u,y,nu,ny,l)
@@ -36,6 +36,10 @@ Y = targetVec(y,p)
 
 M = ncol(P)
 NP = nrow(P)
+
+###########################################################################
+# FROLS BEGIN
+###########################################################################
 
 # 1st step ----------------------------------------------------------------
 sig = Y[,] %*% Y[,]
@@ -54,7 +58,8 @@ l1 = which(ERR==max(ERR))
 selectTerms = l1 # vector keeping all selected terms
 
 # init
-A = diag(1,M)
+# A = diag(1,M)
+A=1
 Qs = matrix(P[,l1],ncol = 1)
 gvec = g[l1]
 ERRvec = ERR[l1]
@@ -64,6 +69,7 @@ for (s in 2:M){
   gm  = rep(0,M)
   Qm  = matrix(0,NP,M)
   ERR = rep(0,M)
+  A = cbind(rbind(A,0),0)
   
   for (m in (1:M)[-selectTerms]) {
     
@@ -87,6 +93,8 @@ for (s in 2:M){
   for (r in 1:(s-1)){
     A[r,s] = (Qs[,r] %*% P[,ls]) / (Qs[,r] %*% Qs[,r])
   }
+  A[s,s] = 1
+  
   ERRvec = rbind(ERRvec,ERR[ls])
   
   ESR = 1-sum(ERRvec)
@@ -97,15 +105,18 @@ for (s in 2:M){
   }
 }
 
-A = A[1:s,1:s]
+th_FROLS = solve(A,gvec)
+Psel = P[,selectTerms]
+###########################################################################
+# FROLS END
+###########################################################################
 
-th_OLS = solve(A,gvec)
 
-P = P[,selectTerms]
+# print important information ---------------------------------------------
 
 print("Selected terms")
-print(colnames(P))
+print(colnames(Psel))
 print("Estimated parameters")
-print(th_OLS[,])
+print(th_FROLS[,])
 print(ERRvec[,]*100)
 
