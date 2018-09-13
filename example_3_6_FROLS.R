@@ -6,6 +6,7 @@ rm(list=ls()) # remove all vars and functions
 cat("\014")   # clean console
 while(!is.null(dev.list())) dev.off()     # clear all graphs
 
+library(tidyverse)
 source("library_sysid.R")
 
 # code begins
