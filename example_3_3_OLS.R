@@ -29,9 +29,14 @@ th_ls = ginv(P) %*% Y # see text in example 3.3, below eq. 3.22
 # orthogonal least squares
 
 # -- remove the predictors here
-# P = P[,c(3,1)] # FIRST LINE IN TABLE 3.2
-# P = P[,c(3,1,2)] # SECOND LINE IN TABLE 3.2
-P = P[,c(3,1,2,4)] # SECOND LINE IN TABLE 3.2
+
+print('Executing for example 3.3 in billings 2013 book')
+print('Insert which line (1, 2 or 3) in table 3.2 you want to check')
+a=as.character(scan(nmax = 1))
+P = switch(a,
+       "1" = P[,c(3,1)],     # FIRST  LINE IN TABLE 3.2
+       "2" = P[,c(3,1,2)],   # SECOND LINE IN TABLE 3.2
+       "3" = P[,c(3,1,2,4)]) # THIRD  LINE IN TABLE 3.2
 
 niter = ncol(P)
 
@@ -55,22 +60,14 @@ for (i in 1:niter){
   ERR[i] = ( (Y %*% W[,i])^2 )/ ( (Y %*% Y) * (W[,i] %*% W[,i]) )
 }
 
+ESR = 1- sum(ERR)
+
 th_OLS = solve(A,g)
 
 print('OLS estimated parameters')
 print(th_OLS)
 print('ERR estimated parameters')
 print(ERR)
-
-
-# CONCLUSION
-# 1- the ERR values are the same (confronting with table 3.2)
-# 2- the values for th are the same for Table 3.2, varying the terms
-# 3- it should be fine
-
-
-
-
-
-
+print('ESR')
+print(ESR)
 
