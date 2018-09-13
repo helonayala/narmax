@@ -12,8 +12,7 @@ while(!is.null(dev.list())) dev.off()     # clear all graphs
 library(ggplot2) # fancy plots
 library(signal)  # filter for input signal
 library(MASS)    # use ginv
-library(tidyr)   # melt data frames
-library(dplyr)   # create tibbles
+library(tidyverse) # data utils
 
 # load functions
 source("library_sysid.R")
@@ -153,25 +152,25 @@ p = list()
 #   )
 
 p = c(p,list(
-  ggplot(data=filter(df_all,variable %in% c("ye","ye_osa","ye_fr"))) + 
+  ggplot(data=dplyr::filter(df_all,variable %in% c("ye","ye_osa","ye_fr"))) + 
   geom_line(aes(x = time,y =measurement,color=variable)) + 
   ggtitle(paste0("predictions (estimation) - R2 osa = ",R2e_osa," R2 fr = ",R2e_fr)))
   )
 
 p = c(p,list(
-  ggplot(data=filter(df_all,variable %in% c("yv","yv_osa","yv_fr"))) + 
+  ggplot(data=dplyr::filter(df_all,variable %in% c("yv","yv_osa","yv_fr"))) + 
   geom_line(aes(x = time,y =measurement,color=variable)) +  
   ggtitle(paste0("predictions (validation) - R2 osa = ",R2v_osa," R2 fr = ",R2v_fr)))
   )
 
 p = c(p,list(
-    ggplot(data=filter(df_error,variable %in% c("ee_osa","ee_fr"))) + 
+    ggplot(data=dplyr::filter(df_error,variable %in% c("ee_osa","ee_fr"))) + 
   geom_line(aes(x = time,y =measurement,color=variable)) + 
   ggtitle("prediction residuals (estimation)"))
   )
 
 p = c(p,list(
-    ggplot(data=filter(df_error,variable %in% c("ev_osa","ev_fr"))) + 
+    ggplot(data=dplyr::filter(df_error,variable %in% c("ev_osa","ev_fr"))) + 
   geom_line(aes(x = time,y =measurement,color=variable)) + 
   ggtitle("prediction residuals (validation)"))
   )
