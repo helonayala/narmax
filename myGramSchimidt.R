@@ -22,13 +22,13 @@ N   = nrow(P)
 Nth = ncol(P)
 
 # init matrix
-A = eye(Nth)
+A = diag(1,nrow = Nth)
 Q = matrix(0,nrow =N, ncol = Nth)
 Q[,1] = P[,1]
 for (i in 2:Nth) {
   Q[,i] = P[,i] 
   for (j in 1:(i-1)){
-    disp(j,i)
+    print(j,i)
     A[j,i] = (Q[,j] %*% P[,i]) / (Q[,j] %*% Q[,j])
     Q[,i] = Q[,i] - A[j,i] * Q[,j]
   }
