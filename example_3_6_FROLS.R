@@ -88,7 +88,7 @@ for (s in 2:M){
   ls = which(ERR==max(ERR))
   selectTerms = cbind(selectTerms,ls) # vector keeping all selected terms
   
-  Qs = cbind(Qs,Qm[,ls])
+  Qs = cbind(Qs,Qm[,ls]) # keep set of orthogonal bases
   gvec = rbind(gvec,gm[ls])
   for (r in 1:(s-1)){
     A[r,s] = (Qs[,r] %*% P[,ls]) / (Qs[,r] %*% Qs[,r])
