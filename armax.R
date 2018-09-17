@@ -63,7 +63,7 @@ Th_ARMAX_hat = matrix(0,na+nb+nc,niter)
 th_ARX_hat = ginv(Phie) %*% Ye
 th_ARX_hat0 = th_ARX_hat
 th_ARMAX_hat0 = c(th_ARX_hat0,rep(0,nc))
-ee_s1 = c(rep(0,p-1),Phie %*% th_ARX_hat)
+ee_s1 = c(rep(0,p-1),Ye - (Phie %*% th_ARX_hat))
 dlt1 = rep(0,niter)
 dlt2 = rep(0,niter)
 
