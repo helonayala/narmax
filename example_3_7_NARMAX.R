@@ -25,11 +25,13 @@ for (k in 3:N) {
     0.1*u[k-1]*e[k-2] +
     e[k]
 }
+e = rep(0,N)
 
 # Step 1: define model initial conditions
 # model parameters --------------------------------------------------------
-rho_p = 0.05
-rho_n = 0.01
+rho_p = 1e-2
+rho_n = 1.9e-6
+#rho_n = 4.55e-7
 nu = 2
 ny = 2
 ne = 2
@@ -37,16 +39,43 @@ l = 2
 n = nu + ny + ne
 p = max(nu,ny,ne)+1
 
-plot(y)
-lines(y)
+Y = targetVec(y,p)
 
-# Step 2: identify process sub-model (NARX)
+selectTerms = NULL # terms selected for parsimonious model from the NARMAX full-model 
 
+# Step 2: identify process sub-model (NARX) FROLS
+out = regMatNARMAX(u,y,e,nu,ny,ne,p,l,selectTerms)
+Pp  = out$Pp
 
+outNARX = frols(Pp,Y,rho_p)
+e = c(rep(0,p-1), Y - outNARX$W %*% outNARX$g)
 
-# Step 3: identify noise-related sub-model (MA)
+print("---------------------------------")
+print("-- Step 2: NARX TERM SELECTION --")
+print("---------------------------------")
+print((outNARX$ERR)*100)
+print("SUM ERR: ")
+print(sum(outNARX$ERR)*100)
+print("selected terms")
+print(colnames(outNARX$Psel))
 
+# Step 3: identify noise-related sub-model (MA) FROLS
+out = regMatNARMAX(u,y,e,nu,ny,ne,p,l,selectTerms)
+Pnp = cbind(outNARX$Psel,out$Pnp)
+outNARMAX = frols(Pnp,Y,rho_n)
 
+print("-----------------------------------")
+print("-- Step 3: NARMAX TERM SELECTION --")
+print("-----------------------------------")
+print((outNARMAX$ERR)*100)
+print("SUM ERR: ")
+print(sum(outNARMAX$ERR)*100)
+print("selected terms")
+print(colnames(outNARMAX$Psel))
+print("estimated parameters")
+print(outNARMAX$th)
 
-# Step 4: obtain final model parameters (ELS)
-
+# Step 4: obtain final model parameters (NARMAX) ELS
+for(s in 1:5){
+  
+}
