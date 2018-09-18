@@ -7,6 +7,7 @@ cat("\014")   # clean console
 while(!is.null(dev.list())) dev.off()     # clear all graphs
 
 library(tidyverse)
+library(MASS)
 source("library_sysid.R")
 set.seed(0) # reproducibility
 
@@ -64,6 +65,8 @@ out = regMatNARMAX(u,y,e,nu,ny,ne,p,l,selectTerms)
 Pnp = cbind(outNARX$Psel,out$Pnp)
 outNARMAX = frols(Pnp,Y,rho_n)
 
+selectTerms = colnames(outNARMAX$Psel) # final model terms selection
+
 print("-----------------------------------")
 print("-- Step 3: NARMAX TERM SELECTION --")
 print("-----------------------------------")
@@ -71,11 +74,50 @@ print((outNARMAX$ERR)*100)
 print("SUM ERR: ")
 print(sum(outNARMAX$ERR)*100)
 print("selected terms")
-print(colnames(outNARMAX$Psel))
+print(selectTerms)
 print("estimated parameters")
 print(outNARMAX$th)
 
+nth = length(outNARMAX$th)
+e = c(rep(0,p-1), Y - outNARMAX$W %*% outNARMAX$g)
+
 # Step 4: obtain final model parameters (NARMAX) ELS
-for(s in 1:5){
+iterELS = 10
+
+Th_NARMAX_hat = matrix(0,nrow = nth,ncol = iterELS)
+dlt = rep(0,iterELS)
+for(s in 1:iterELS){
   
+  out = regMatNARMAX(u,y,e,nu,ny,ne,p,l,selectTerms)
+  P = out$P
+  
+  th_NARMAX_hat = ginv(P) %*% Y
+
+  # calculate error and pad zeros for the initial conditions
+  e_1 = e
+  e = c(rep(0,p-1),Y - (P %*% th_NARMAX_hat)[,])
+  
+  # --- stop conditions
+  dlt[s] = sqrt(sum((e - e_1)^2))
+  
+  # save estimated vectors
+  Th_NARMAX_hat[,s] = th_NARMAX_hat
 }
+plot(dlt)
+# final print
+
+print("-----------------------------------")
+print("-----------------------------------")
+print("-----------------------------------")
+print("End of NARMAX system identification procedure")
+print("selected terms:")
+print(colnames(P))
+print("related parameters:")
+print(Th_NARMAX_hat[,iterELS])
+
+
+
+
+
+
+
