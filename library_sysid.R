@@ -378,3 +378,58 @@ frols = function(P,Y,rho){
   
 }
 
+
+regMatNARMAX = function(u,y,e,nu,ny,ne,p,l,selectTerms){
+  n = nu+ny+ne
+  P = NULL # here we store the final NARMAX regression matrix 
+  
+  P0 = regMatrix_MA(y,u,e,ny,nu,ne,p) # creates the initial regression matrix (with ARX terms)
+  P0[,1:ny] = -P0[,1:ny] # fix -y(k-..) from armax modeling
+  colnames(P0) = c(paste0("y(k-",1:ny,")"),paste0("u(k-",1:nu,")"),paste0("e(k-",1:ne,")")) # fix column names
+  NP = nrow(P0)
+  P = cbind(rep(1,NP), P) # constant term
+  colnames(P) = "constant"
+  P = cbind(P, P0) # l = 1, trivial
+  
+  # generate all terms product combinations possible
+  auxexp = list()
+  candlist = list()
+  for(i in 1:l){
+    eval(parse(text=paste0("auxexp$x",i,"=1:n"))) # generate input args for expand.grid
+    cand = do.call(expand.grid,auxexp) # call expand.grid for changing number of arguments
+    
+    cand = t(apply(cand,1,sort)) # order each row of the matrix
+    cand = unique(cand) # keep unique rows
+    candlist[[i]] = cand
+  }
+  
+  for (i in 2:l){
+    ncand = nrow(candlist[[i]])
+    for(j in 1:ncand){
+      Pcand_a = P0[,candlist[[i]][j,]]
+      Pcand_b = matrix(apply(Pcand_a,1,prod),ncol = 1)
+      colnames(Pcand_b) = str_c(colnames(P0[,candlist[[i]][j,]]),collapse = "")
+      P = cbind(P,Pcand_b)
+    }
+  }
+  
+  ind = grepl("e(",colnames(P), fixed=TRUE) # find cols which have e[k-i] terms
+  
+  if (!is.null(selectTerms)){ # remove terms as indicated by FROLS
+    P = P[,selectTerms]
+  }
+  
+  out = list()
+  out$P = P
+  out$Pp = P[,!ind]
+  out$Pnp = P[,ind]
+  
+  return(out)
+}
+
+
+
+
+
+
+
