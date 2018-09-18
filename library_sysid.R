@@ -413,11 +413,12 @@ regMatNARMAX = function(u,y,e,nu,ny,ne,p,l,selectTerms){
     }
   }
   
-  ind = grepl("e(",colnames(P), fixed=TRUE) # find cols which have e[k-i] terms
-  
-  if (!is.null(selectTerms)){ # remove terms as indicated by FROLS
-    P = P[,selectTerms]
+  if (!is.null(selectTerms)){ # remove terms as indicated by FROLS (ELS part)
+    ind2 = which(colnames(P) %in% selectTerms)
+    P = P[,ind2]
   }
+  
+  ind = grepl("e(",colnames(P), fixed=TRUE) # find cols which have e[k-i] terms
   
   out = list()
   out$P = P
