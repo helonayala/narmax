@@ -76,7 +76,9 @@ targetVec = function(y,p){
 calcFR_ARX = function(y,u,na,nb,p,th_hat){
   
   y_fr = y[1:(p-1)]
-  u_fr = u[1:(p-1)]
+  u_fr = u
+  
+  N = length(y)
   
   for (k in p:N){
     phi_k = regMatrix_ARX(c(y_fr[(k-p+1):(k-1)],0),c(u_fr[(k-p+1):(k-1)],0),na,nb,p)
@@ -93,6 +95,8 @@ calcOSA_ARMAX = function(y,u,na,nb,nc,p,th_hat){
   y_fr = y[1:(p-1)]
   u_fr = u[1:(p-1)]
   e_fr = rep(0,p-1)
+  
+  N = length(y)
   
   for (k in p:N){
     auxy = c(y_fr[(k-p+1):(k-1)],0)
