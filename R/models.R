@@ -1,15 +1,14 @@
 #' @title ARX Model
 #' @description Creates an autoregressive with exogenous inputs model
-#' @param na Number of autoregressive lags
-#' @param nb Number of input lags
-#' @param p Autoregressive delay ??
+#' @param ny Number of autoregressive lags
+#' @param nu Number of input lags
 #' @return Object representing an ARX model
 #' @export
-model.arx = function (na, nb, p) {
+arx = function (ny, nu, p) {
   model = list(
-    na = na,
-    nb = nb,
-    p = p,
+    ny = ny,
+    nu = nu,
+    maxLag = max(ny, nu) + 1,
     terms = NULL,
     coefficients = NULL, # Variable name required by base::
     call = match.call()
@@ -20,18 +19,17 @@ model.arx = function (na, nb, p) {
 
 #' @title ARMAX Model
 #' @description Creates an autoregressive moving average with exogenous inputs model
-#' @param na Number of autoregressive lags
-#' @param nb Number of input lags
-#' @param nc Number of moving average lags
-#' @param p Autoregressive delay ??
+#' @param ny Number of autoregressive lags
+#' @param nu Number of input lags
+#' @param ne Number of moving average lags
 #' @return Object representing an ARMAX model
 #' @export
-model.armax = function (na, nb, nc, p) {
+armax = function (ny, nu, ne) {
   model = list(
-    na = na,
-    nb = nb,
-    nc = nc,
-    p = p,
+    ny = ny,
+    nu = nu,
+    ne = ne,
+    maxLag = max(ny, nu, ne) + 1,
     terms = NULL,
     coefficients = NULL, # Variable name required by base::
     call = match.call()
