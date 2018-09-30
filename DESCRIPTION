@@ -2,11 +2,17 @@ Package: sysident
 Title: System Identification Toolbox
 Version: 0.1
 Authors@R: c(
-  person("Helon Ayala Hultmann", "Ayala", email = "", role = c("aut")),
-  person("Marcos Cesar", "Gritti", email = "", role = c("aut")),
-  person("Leandro dos Santos", "Coelho", email = "", role = c("aut")))
+  person("Helon Ayala Hultmann", "Ayala", email = "helonayala@gmail.com", role = c("cre", "aut")),
+  person("Marcos Cesar", "Gritti", email = "cesargritti@gmail.com", role = c("aut")),
+  person("Leandro dos Santos", "Coelho", email = "lscoelho2009@gmail.com", role = c("aut")))
 Description: Package description
 Depends: R (>= 3.1.0)
 License: MIT
 LazyData: true
- 
+Imports: ggplot2
+RoxygenNote: 6.1.0
+Encoding: UTF-8
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
