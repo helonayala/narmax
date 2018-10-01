@@ -1,5 +1,5 @@
-Package: sysident
-Title: System Identification Toolbox
+Package: nsysid
+Title: Nonlinear System Identification
 Version: 0.1
 Authors@R: c(
   person("Helon Ayala Hultmann", "Ayala", email = "helonayala@gmail.com", role = c("cre", "aut")),
@@ -7,11 +7,12 @@ Authors@R: c(
   person("Leandro dos Santos", "Coelho", email = "lscoelho2009@gmail.com", role = c("aut")))
 Description: Package description
 Depends: R (>= 3.1.0)
-License: MIT
+License: GPL-3
 LazyData: true
 Imports: 
     ggplot2,
-    stringr
+    stringr,
+    MASS
 RoxygenNote: 6.1.0
 Encoding: UTF-8
 Suggests: 

@@ -4,9 +4,27 @@
 #' @return Boolean indicating if model is uninitialized
 baseRepr = function (model) {
   print(model$call)
-  hasBeenEstimated = !is.null(model$terms)
-  if (!hasBeenEstimated) invisible(print("Not estimated"))
-  return(hasBeenEstimated)
+  ny = model$ny
+  nu = model$nu
+  ne = model$ne
+  nl = model$nl
+
+  props = list()
+  if (!is.null(ny)) props$ny = ny
+  if (!is.null(nu)) props$ny = nu
+  if (!is.null(ne)) props$ny = ne
+  if (!is.null(nl)) props$ny = nl
+
+  if (is.null(model$terms)) {
+    cat('\nNot estimated\n')
+  } else {
+    nTerms = length(model$terms)
+    cat('\n')
+    cat(sprintf('%20s%20s\n', 'Term', 'Coefficient'))
+    for (i in 1:nTerms) {
+      cat(sprintf('%20s%20.4f\n', model$terms[i], model$coefficients[i]))
+    }
+  }
 }
 
 #' @title ARX model printer
@@ -43,8 +61,4 @@ print.narx = function (model) {
 #' @description Print basic info from NARMAX model
 #' @param model NARMAX model
 #' @export
-print.narmax = function (model) {
-  if (baseRepr(model)) {
-    invisible(print('TODO: Show terms and coefficients'))
-  }
-}
+print.narmax = function (model) baseRepr(model)

@@ -82,6 +82,8 @@ estimate.narmax = function (model, Y, U, rho_p = 1e-2, rho_n = 1.9e-6) {
     thNarmaxHat[, s] = theta
   }
 
+  model$coefficients = theta[,]
+
   print(theta)
 
   return(model)

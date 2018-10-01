@@ -4,7 +4,7 @@
 \alias{estimate.narmax}
 \title{Estimate NARMAX model}
 \usage{
-\method{estimate}{narmax}(model, ...)
+\method{estimate}{narmax}(model, Y, U, rho_p = 0.01, rho_n = 1.9e-06)
 }
 \description{
 Estimate NARMAX model
