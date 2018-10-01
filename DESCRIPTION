@@ -9,10 +9,21 @@ Description: Package description
 Depends: R (>= 3.1.0)
 License: MIT
 LazyData: true
-Imports: ggplot2
+Imports: 
+    ggplot2,
+    stringr
 RoxygenNote: 6.1.0
 Encoding: UTF-8
 Suggests: 
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+Collate: 
+    'estimators.R'
+    'factorizers.R'
+    'frols.R'
+    'generators.R'
+    'models.R'
+    'predictors.R'
+    'printers.R'
+    'utils.R'

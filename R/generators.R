@@ -6,12 +6,10 @@ sizeGuard = function (Y, U, E = NULL) {
 }
 
 #' @export
-generateRM = function (model, ...) {
-  UseMethod('generateRM', model)
-}
+genRegMatrix = function (model, ...) UseMethod('genRegMatrix', model)
 
 #' @export
-generateRM.default = function (model, ...) {
+genRegMatrix.default = function (model, ...) {
   stop(sprintf('Unknown class %s for regression matrix generation', class(model)))
 }
 
@@ -20,37 +18,41 @@ generateRM.default = function (model, ...) {
 #' @param model ARX Model
 #' @param Y The target vector
 #' @param U The input vector
-#' @return Regression Matrix
+#' @return Object containing:
+#' \describe{
+#'  \item{P}{Regression matrix with all terms}
+#'  \item{Pp}{Regression matrix with only process terms}
+#'  \item{Pnp}{Regression matrix without process terms}
+#' }
 #' @export
-generateRM.arxModel = function (model, Y, U, E = NULL) {
+genRegMatrix.arx = function (model, Y, U, E = NULL) {
   na = model$ny
   nb = model$nu
   p = model$maxLag
   N = length(Y)
 
   sizeGuard(Y, U, E)
+  obj = list()
 
-  Phi = matrix(0, nrow = N - p + 1, ncol = na + nb)
+  obj$P = matrix(0, nrow = N - p + 1, ncol = na + nb)
   colPhi = NULL
   for(i in 1:na){
-    print(i)
-    print(Phi[, i])
-    print(-Y[(p - i):(N - i)])
-    Phi[, i] = -Y[(p - i):(N - i)]
+    obj$P[, i] = -Y[(p - i):(N - i)]
     colPhi = c(colPhi, paste0("-y(k-",i,")"))
   }
 
   for(i in 1:nb){
-    Phi[, na + i] = U[(p - i):(N - i)]
+    obj$P[, na + i] = U[(p - i):(N - i)]
     colPhi = c(colPhi, paste0("u(k-",i,")"))
   }
 
   rowPhi = paste0(rep("k=", N - p + 1), p:N)
 
-  colnames(Phi) = colPhi
-  rownames(Phi) = rowPhi
+  colnames(obj$P) = colPhi
+  rownames(obj$P) = rowPhi
 
-  return(Phi)
+  obj$Pp = obj$P
+  return(obj)
 }
 
 #' @title Generates a regression matrix
@@ -59,9 +61,14 @@ generateRM.arxModel = function (model, Y, U, E = NULL) {
 #' @param Y The target vector
 #' @param U The input vector
 #' @param E The error vector (can be NULL)
-#' @return Regression Matrix
+#' @return Object containing:
+#' \describe{
+#'  \item{P}{Regression matrix with all terms}
+#'  \item{Pp}{Regression matrix with only process terms}
+#'  \item{Pnp}{Regression matrix without process terms}
+#' }
 #' @export
-generateRM.armaxModel = function (model, Y, U, E = NULL) {
+genRegMatrix.armax = function (model, Y, U, E = NULL) {
   na = model$ny
   nb = model$nu
   nc = model$ne
@@ -69,33 +76,198 @@ generateRM.armaxModel = function (model, Y, U, E = NULL) {
   N = length(Y)
 
   sizeGuard(Y, U, E)
+  obj = list()
 
   if (is.null(E)) nc = 0
 
-  Phi = matrix(0, nrow = N - p + 1, ncol = na + nb + nc)
+  obj$P = matrix(0, nrow = N - p + 1, ncol = na + nb + nc)
 
   colPhi = NULL
-  for(i in 1:na){
-    Phi[, i] = -Y[(p - i):(N - i)]
+  for(i in 1:na) {
+    obj$P[, i] = -Y[(p - i):(N - i)]
     colPhi = c(colPhi, paste0("-y(k-",i,")"))
   }
 
-  for(i in 1:nb){
-    Phi[, na + i] = U[(p - i):(N - i)]
+  for(i in 1:nb) {
+    obj$P[, na + i] = U[(p - i):(N - i)]
     colPhi = c(colPhi, paste0("u(k-",i,")"))
   }
 
   if (nc > 0) {
-    for(i in 1:nc){
-      Phi[, na + nb + i] = E[(p - i):(N - i)]
+    for(i in 1:nc) {
+      obj$P[, na + nb + i] = E[(p - i):(N - i)]
       colPhi = c(colPhi, paste0("e(k-",i,")"))
     }
   }
 
   rowPhi = paste0(rep("k=", N - p + 1), p:N)
 
-  colnames(Phi) = colPhi
-  rownames(Phi) = rowPhi
+  colnames(obj$P) = colPhi
+  rownames(obj$P) = rowPhi
 
-  return(Phi)
+  errIndexes = grepl('e(', colnames(obj$P), fixed = TRUE)
+
+  obj$Pp = matrix(
+    obj$P[, !errIndexes],
+    ncol = sum(!errIndexes),
+    dimnames = list(rownames(obj$P), colnames(obj$P)[!errIndexes]))
+
+  obj$Pnp = matrix(
+    obj$P[, errIndexes],
+    ncol = sum(errIndexes),
+    dimnames = list(rownames(obj$P), colnames(obj$P)[errIndexes]))
+
+  return(obj)
+}
+
+#' @title Generates a regression matrix
+#' @description Generates a regression matrix for a NARX Model
+#' @param model NARX Model
+#' @param Y The target vector
+#' @param U The input vector
+#' @return Object containing:
+#' \describe{
+#'  \item{P}{Regression matrix with all terms}
+#'  \item{Pp}{Regression matrix with only process terms}
+#'  \item{Pnp}{Regression matrix without process terms}
+#' }
+#' @export
+genRegMatrix.narx = function (model, Y, U, E = NULL) {
+  ny = model$ny
+  nu = model$nu
+  nl = model$nl
+  n = ny + nu
+  p = model$maxLag
+  N = length(Y)
+
+  sizeGuard(Y, U, E)
+  obj = list()
+
+  auxExp = list()
+  candList = list()
+
+  for (i in 1:nl) {
+    eval(parse(text = paste0('auxExp$x', i, '= 1:n')))
+    cand = expand.grid(auxExp)
+    candList[[i]] = unique(t(apply(cand, 1, sort)))
+  }
+
+  P0 = genRegMatrix(arx(ny, nu), Y, U, E)$P
+  P0[, 1:ny] = -P0[, 1:ny]
+  colnames(P0) = c(paste0("y(k-", 1:ny, ")"), paste0("u(k-", 1:nu, ")"))
+  print('I AM HERE')
+
+  NP0 = nrow(P0)
+  obj$P = NULL
+  obj$P = cbind(rep(1, NP0), obj$P) # Contant
+  colnames(obj$P) = "constant"
+  obj$P = cbind(obj$P, P0)
+
+  if (nl >= 2) {
+    for (i in 2:nl) {
+      ncand = nrow(candList[[i]])
+      for (j in 1:ncand) {
+        Pcand_a = P0[, candList[[i]][j, ]]
+        Pcand_b = matrix(apply(Pcand_a, 1, prod), ncol = 1)
+        colnames(Pcand_b) = stringr::str_c(colnames(P0[, candList[[i]][j, ]]), collapse = '')
+        obj$P = cbind(obj$P, Pcand_b)
+      }
+    }
+  }
+
+  obj$Pp = obj$P
+  obj$Pnp = NULL
+  return(obj)
+}
+
+#' @title Generates a regression matrix
+#' @description Generates a regression matrix for a NARMAX Model
+#' @param model NARMAX Model
+#' @param Y The target vector
+#' @param U The input vector
+#' @param E The error vector
+#' @return Object containing:
+#' \describe{
+#'  \item{P}{Regression matrix with all terms}
+#'  \item{Pp}{Regression matrix with only process terms}
+#'  \item{Pnp}{Regression matrix without process terms}
+#' }
+#' @export
+genRegMatrix.narmax = function (model, Y, U, E = NULL) {
+  ny = model$ny
+  nu = model$nu
+  ne = model$ne
+  nl = model$nl
+  n = ny + nu + ne
+  p = model$maxLag
+  N = length(Y)
+
+  sizeGuard(Y, U, E)
+  obj = list()
+
+  auxExp = list()
+  candList = list()
+
+  for (i in 1:nl) {
+    eval(parse(text = paste0('auxExp$x', i, '= 1:n')))
+    cand = expand.grid(auxExp)
+    candList[[i]] = unique(t(apply(cand, 1, sort)))
+  }
+
+  P0 = genRegMatrix(armax(ny, nu, ne), Y, U, E)$P
+  P0[, 1:ny] = -P0[, 1:ny]
+  colnames(P0) = c(paste0('y(k-', 1:ny, ')'), paste0('u(k-', 1:nu, ')'), paste0('e(k-', 1:ne, ')'))
+
+  NP0 = nrow(P0)
+  obj$P = NULL
+  obj$P = cbind(rep(1, NP0), obj$P) # Contant
+  colnames(obj$P) = "constant"
+  obj$P = cbind(obj$P, P0)
+
+  if (nl >= 2) {
+    for (i in 2:nl) {
+      ncand = nrow(candList[[i]])
+      for (j in 1:ncand) {
+        Pcand_a = P0[, candList[[i]][j, ]]
+        Pcand_b = matrix(apply(Pcand_a, 1, prod), ncol = 1)
+        colnames(Pcand_b) = stringr::str_c(colnames(P0[, candList[[i]][j, ]]), collapse = '')
+        obj$P = cbind(obj$P, Pcand_b)
+      }
+    }
+  }
+
+  if (!is.null(model$terms)) {
+    termIndexes = which(colnames(obj$P) %in% model$terms)
+    obj$P = obj$P[, termIndexes]
+  }
+
+  errIndexes = grepl('e(', colnames(obj$P), fixed = TRUE)
+  obj$Pp = matrix(
+    obj$P[, !errIndexes],
+    ncol = sum(!errIndexes),
+    dimnames = list(rownames(obj$P), colnames(obj$P)[!errIndexes]))
+
+  obj$Pnp = matrix(
+    obj$P[, errIndexes],
+    ncol = sum(errIndexes),
+    dimnames = list(rownames(obj$P), colnames(obj$P)[errIndexes]))
+
+  return(obj)
+}
+
+#' @export
+genTarget = function (model, ...) UseMethod('genTarget')
+
+#' @title Generate target vector
+#' @description Generate target vector based on maximum lag. Works with any model
+#' @param model Any model containing a $maxLag property
+#' @param Y Original target vector
+#' @export
+genTarget.default = function (model, Y) {
+  N = length(Y)
+  p = model$maxLag
+  target = matrix(Y[p:N], ncol = 1)
+  rownames(target) = paste0(rep("k=", N - p + 1), p:N)
+  colnames(target) = "y(k)"
+  return(target)
 }

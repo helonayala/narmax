@@ -13,7 +13,7 @@ baseRepr = function (model) {
 #' @description Print basic info from ARX model
 #' @param model ARX model
 #' @export
-print.arxModel = function (model) {
+print.arx = function (model) {
   if (baseRepr(model)) {
     invisible(print('TODO: Show terms and coefficients'))
   }
@@ -23,7 +23,7 @@ print.arxModel = function (model) {
 #' @description Print basic info from ARMAX model
 #' @param model ARMAX model
 #' @export
-print.armaxModel = function (model) {
+print.armax = function (model) {
   if (baseRepr(model)) {
     invisible(print('TODO: Show terms and coefficients'))
   }
@@ -33,7 +33,7 @@ print.armaxModel = function (model) {
 #' @description Print basic info from NARX model
 #' @param model NARX model
 #' @export
-print.narxModel = function (model) {
+print.narx = function (model) {
   if (baseRepr(model)) {
     invisible(print('TODO: Show terms and coefficients'))
   }
@@ -43,7 +43,7 @@ print.narxModel = function (model) {
 #' @description Print basic info from NARMAX model
 #' @param model NARMAX model
 #' @export
-print.narmaxModel = function (model) {
+print.narmax = function (model) {
   if (baseRepr(model)) {
     invisible(print('TODO: Show terms and coefficients'))
   }

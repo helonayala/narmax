@@ -9,7 +9,7 @@ frols = function (P, Y, rho) {
   NP = nrow(P)
 
   # 1st step ----------------------------------------------------------------
-  sig = Y[,] %*% Y[,]
+  sig = Y[, ] %*% Y[, ]
   selectTerms = NULL
   ERRvec = NULL
   gvec = NULL
@@ -22,7 +22,7 @@ frols = function (P, Y, rho) {
     ERR[m] = (g[m] ^ 2 * (Qs[, m] %*% Qs[, m])) / sig
   }
   l1 = which(ERR == max(ERR))
-  selectTerms = l1 # vector keeping all selected terms
+  selectTerms = l1[1] # vector keeping all selected terms
 
   # init
   # A = diag(1,M)
@@ -72,7 +72,7 @@ frols = function (P, Y, rho) {
   return(list(
     th = th_FROLS[, ],
     Psel = Psel,
-    g = gVec,
+    g = gvec,
     W = Qs,
     A = A,
     ERR = ERRvec[, ]
