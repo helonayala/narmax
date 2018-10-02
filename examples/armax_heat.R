@@ -13,9 +13,9 @@ library(MASS)    # use ginv
 library(tidyverse) # data utils
 
 # load functions
-source("library_sysid.R")
+source("organize/library_sysid.R")
 
-data <- matrix(scan("heating_system.dat"),
+data <- matrix(scan("examples/heating_system.dat"),
                nrow=801,
                byrow=TRUE)
 
@@ -53,20 +53,20 @@ dlt1 = rep(0,niter)
 dlt2 = rep(0,niter)
 
 for (i in 1:niter){
-  
+
   Phie_ext = regMatrix_MA(ye,ue,ee_s1,na,nb,nc,p)
-  
+
   th_ARMAX_hat = ginv(Phie_ext) %*% Ye
-  
+
   # --- stop conditions
   dlt1[i] = sqrt(sum((th_ARMAX_hat - th_ARMAX_hat0)^2))
   th_ARMAX_hat0 = th_ARMAX_hat
-  
+
   # calculate error and pad zeros for the initial conditions
   ee_s = ee_s1
   ee_s1 = c(rep(0,p-1),Ye - (Phie_ext %*% th_ARMAX_hat)[,])
   dlt2[i] = sqrt(sum((ee_s1 - ee_s)^2))
-  
+
   # save estimated vectors
   Th_ARMAX_hat[,i] = th_ARMAX_hat
   th_ARX_hat = th_ARMAX_hat[1:(na+nb)]
@@ -106,7 +106,7 @@ df_prede = tibble(time = p:400,
                   ye_osa = ye_osa,
                   ye_fr  = ye_fr) %>%
   gather(variable, measurement, -time)
-                  
+
 df_predv = tibble(time = (400+p):801,
                  yv_osa = yv_osa,
                  yv_fr  = yv_fr) %>%
@@ -127,18 +127,18 @@ p = list()
 #   )
 
 # p = c(p,list(
-#   ggplot(data=filter(df_dataset,variable %in% c("ye","yeor"))) + 
-#   geom_line(aes(x = time,y =measurement,color=variable)) + 
+#   ggplot(data=filter(df_dataset,variable %in% c("ye","yeor"))) +
+#   geom_line(aes(x = time,y =measurement,color=variable)) +
 #   ggtitle("Output (estimation)"))
 #   )
-# 
+#
 # p = c(p,list(
-#   ggplot(data=filter(df_dataset,variable %in% c("yv","yvor"))) + 
-#   geom_line(aes(x = time,y =measurement,color=variable)) + 
+#   ggplot(data=filter(df_dataset,variable %in% c("yv","yvor"))) +
+#   geom_line(aes(x = time,y =measurement,color=variable)) +
 #   ggtitle("Output (validation)"))
 #   )
 
-p = ggplot(data=dplyr::filter(df_all,variable %in% c("ye","ye_osa","ye_fr","yv","yv_osa","yv_fr"))) + 
+p = ggplot(data=dplyr::filter(df_all,variable %in% c("ye","ye_osa","ye_fr","yv","yv_osa","yv_fr"))) +
   geom_line(aes(x = time,y =measurement,color=variable))
 
 print(p)

@@ -40,3 +40,9 @@ model = narmax(ny, nu, ne, nl)
 # Step 2: Estimate the model
 model = estimate(model, y, u, rho_p, rho_n)
 print(model)
+
+Yp = predict(model, y, u, K = 1)
+dfY = data.frame(y[3:400])
+dfP = data.frame(Yp)
+
+ggplot(data = dfY, aes(x = 3:400, y = y.3.400)) + geom_line()

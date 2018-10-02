@@ -4,6 +4,7 @@
 #' @return Boolean indicating if model is uninitialized
 baseRepr = function (model) {
   print(model$call)
+  print('On base rep')
   ny = model$ny
   nu = model$nu
   ne = model$ne
@@ -31,31 +32,19 @@ baseRepr = function (model) {
 #' @description Print basic info from ARX model
 #' @param model ARX model
 #' @export
-print.arx = function (model) {
-  if (baseRepr(model)) {
-    invisible(print('TODO: Show terms and coefficients'))
-  }
-}
+print.arx = function (model) baseRepr(model)
 
 #' @title ARMAX model printer
 #' @description Print basic info from ARMAX model
 #' @param model ARMAX model
 #' @export
-print.armax = function (model) {
-  if (baseRepr(model)) {
-    invisible(print('TODO: Show terms and coefficients'))
-  }
-}
+print.armax = function (model) baseRepr(model)
 
 #' @title NARX model printer
 #' @description Print basic info from NARX model
 #' @param model NARX model
 #' @export
-print.narx = function (model) {
-  if (baseRepr(model)) {
-    invisible(print('TODO: Show terms and coefficients'))
-  }
-}
+print.narx = function (model) baseRepr(model)
 
 #' @title NARMAX model printer
 #' @description Print basic info from NARMAX model
