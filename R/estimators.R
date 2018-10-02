@@ -62,6 +62,8 @@ estimate.armax = function (model, Y, U, niter = 10) {
 
   model$coefficients = theta
 
+  model$terms = colnames(Phie_ext)
+
   print(theta)
 
   return(model)

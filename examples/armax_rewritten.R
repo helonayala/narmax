@@ -24,7 +24,7 @@ nc = 2
 mdl = armax(na,nb,nc)
 
 # generate input-output data ----------------------------------------------
-sd_noise = 0*1e-2
+sd_noise = 1e-2
 N = 1000 # number of samples
 cutoff = 0.1 # normalized frequency cutoff
 th = c(0.3,0.5,0.1,0.4,0.2,0.32,0.1)
