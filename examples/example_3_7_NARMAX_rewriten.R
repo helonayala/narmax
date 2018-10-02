@@ -3,6 +3,7 @@
 # mec2015 - system identification - puc-rio
 
 clearWorkspace()
+library(ggplot2)
 
 # library(tidyverse)
 # library(MASS)
@@ -42,7 +43,15 @@ model = estimate(model, y, u, rho_p, rho_n)
 print(model)
 
 Yp = predict(model, y, u, K = 1)
-dfY = data.frame(y[3:400])
-dfP = data.frame(Yp)
+Ys = predict(model, y, u, K = 0)
+time = 1:N
+p = model$maxLag
 
-ggplot(data = dfY, aes(x = 3:400, y = y.3.400)) + geom_line()
+df = data.frame(time = time[p:N], y = y[p:N], yp = Yp, ys = Ys)
+
+p = ggplot(data = df, aes(x = time)) +
+  geom_line(aes(y = y)) +
+  # geom_line(aes(y = yp), color = "red") +
+  geom_line(aes(y = ys), color = "blue")
+
+plot(p)

@@ -51,6 +51,11 @@ genRegMatrix.arx = function (model, Y, U, E = NULL) {
   colnames(obj$P) = colPhi
   rownames(obj$P) = rowPhi
 
+  if (!is.null(model$terms)) {
+    termIndexes = findTermIndexes(obj$P, model$terms)
+    obj$P = subsetMatrix(obj$P, NULL, termIndexes)
+  }
+
   obj$Pp = obj$P
   return(obj)
 }
@@ -105,6 +110,10 @@ genRegMatrix.armax = function (model, Y, U, E = NULL) {
   colnames(obj$P) = colPhi
   rownames(obj$P) = rowPhi
 
+  if (!is.null(model$terms)) {
+    termIndexes = findTermIndexes(obj$P, model$terms)
+    obj$P = subsetMatrix(obj$P, NULL, termIndexes)
+  }
   errIndexes = grepl('e(', colnames(obj$P), fixed = TRUE)
 
   obj$Pp = matrix(
@@ -167,12 +176,18 @@ genRegMatrix.narx = function (model, Y, U, E = NULL) {
     for (i in 2:nl) {
       ncand = nrow(candList[[i]])
       for (j in 1:ncand) {
-        Pcand_a = P0[, candList[[i]][j, ]]
+        Pcand_a = subsetMatrix(P0, NULL, candList[[i]][j, ]) # P0[, candList[[i]][j, ]]
+        names = colnames(Pcand_a)
         Pcand_b = matrix(apply(Pcand_a, 1, prod), ncol = 1)
-        colnames(Pcand_b) = stringr::str_c(colnames(P0[, candList[[i]][j, ]]), collapse = '')
+        colnames(Pcand_b) = stringr::str_c(names, collapse = '')
         obj$P = cbind(obj$P, Pcand_b)
       }
     }
+  }
+
+  if (!is.null(model$terms)) {
+    termIndexes = findTermIndexes(obj$P, model$terms)
+    obj$P = subsetMatrix(obj$P, NULL, termIndexes)
   }
 
   obj$Pp = obj$P
@@ -228,17 +243,18 @@ genRegMatrix.narmax = function (model, Y, U, E = NULL) {
     for (i in 2:nl) {
       ncand = nrow(candList[[i]])
       for (j in 1:ncand) {
-        Pcand_a = P0[, candList[[i]][j, ]]
+        Pcand_a = subsetMatrix(P0, NULL, candList[[i]][j, ]) # P0[, candList[[i]][j, ]]
+        names = colnames(Pcand_a)
         Pcand_b = matrix(apply(Pcand_a, 1, prod), ncol = 1)
-        colnames(Pcand_b) = stringr::str_c(colnames(P0[, candList[[i]][j, ]]), collapse = '')
+        colnames(Pcand_b) = stringr::str_c(names, collapse = '')
         obj$P = cbind(obj$P, Pcand_b)
       }
     }
   }
 
   if (!is.null(model$terms)) {
-    termIndexes = which(colnames(obj$P) %in% model$terms)
-    obj$P = obj$P[, termIndexes]
+    termIndexes = findTermIndexes(obj$P, model$terms)
+    obj$P = subsetMatrix(obj$P, NULL, termIndexes)
   }
 
   errIndexes = grepl('e(', colnames(obj$P), fixed = TRUE)
