@@ -12,8 +12,24 @@ estimate.default = function (model, ...) {
 
 #' @title Estimate ARX model
 #' @export
-estimate.arx = function (model, ...) {
-  estimateNotImplemented(model)
+estimate.arx = function (model, Y, U, niter = 10) {
+
+  ny = model$ny
+  nu = model$nu
+
+  Phie = genRegMatrix(model,Y,U)$P
+  Ye   = genTarget(model,Y)
+
+  # estimate parameters -----------------------------------------------------
+  theta = ginv(Phie) %*% Ye
+
+  model$coefficients = theta
+
+  model$terms = colnames(Phie)
+
+  print(theta)
+
+  return(model)
 }
 
 #' @title Estimate ARMAX model
