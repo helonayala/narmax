@@ -4,7 +4,7 @@
 \alias{estimate.armax}
 \title{Estimate ARMAX model}
 \usage{
-\method{estimate}{armax}(model, ...)
+\method{estimate}{armax}(model, Y, U, niter = 10)
 }
 \description{
 Estimate ARMAX model

@@ -4,7 +4,7 @@
 \alias{estimate.arx}
 \title{Estimate ARX model}
 \usage{
-\method{estimate}{arx}(model, ...)
+\method{estimate}{arx}(model, Y, U, niter = 10)
 }
 \description{
 Estimate ARX model

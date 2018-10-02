@@ -57,7 +57,8 @@ db = function(X) {
 #' @title Generate filtered random noise signal excitation signal
 #'
 #' @description Filters N-normally distributed samples with a defined cut-off frequency
-#' @description Ref.: Schoukens, Johan, Rik Pintelon, and Yves Rolain. Mastering system identification in 100 exercises. John Wiley & Sons, 2012.
+#'
+#' Ref.: Schoukens, Johan, Rik Pintelon, and Yves Rolain. Mastering system identification in 100 exercises. John Wiley & Sons, 2012.
 #' @param N number of samples
 #' @param cutoff cutoff normalized frequency
 #' @return u, excitation signal
