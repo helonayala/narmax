@@ -4,7 +4,7 @@
 #' @return Boolean indicating if model is uninitialized
 baseRepr = function (model) {
   print(model$call)
-  print('On base rep')
+
   ny = model$ny
   nu = model$nu
   ne = model$ne
