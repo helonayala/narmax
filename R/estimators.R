@@ -12,14 +12,74 @@ estimate.default = function (model, ...) {
 
 #' @title Estimate ARX model
 #' @export
-estimate.arx = function (model, ...) {
-  estimateNotImplemented(model)
+estimate.arx = function (model, Y, U, niter = 10) {
+
+  ny = model$ny
+  nu = model$nu
+
+  Phie = genRegMatrix(model,Y,U)$P
+  Ye   = genTarget(model,Y)
+
+  # estimate parameters -----------------------------------------------------
+  theta = ginv(Phie) %*% Ye
+
+  model$coefficients = theta
+
+  model$terms = colnames(Phie)
+
+  return(model)
 }
 
 #' @title Estimate ARMAX model
 #' @export
-estimate.armax = function (model, ...) {
-  estimateNotImplemented(model)
+estimate.armax = function (model, Y, U, niter = 10) {
+
+  ny = model$ny
+  nu = model$nu
+  ne = model$ne
+  p = model$maxLag
+
+  modelARX = arx(ny,nu)
+
+  Phie = genRegMatrix(modelARX,Y,U)$P
+  Ye   = genTarget(modelARX,Y)
+
+  # estimate parameters -----------------------------------------------------
+  Th_ARMAX_hat = matrix(0,ny+nu+ne,niter)
+  th_ARX_hat = ginv(Phie) %*% Ye
+  th_ARX_hat0 = th_ARX_hat
+  th_ARMAX_hat0 = c(th_ARX_hat0,rep(0,ne))
+  ee_s1 = c(rep(0,p-1),Ye - (Phie %*% th_ARX_hat))
+  dlt1 = rep(0,niter)
+  dlt2 = rep(0,niter)
+
+  for (i in 1:niter){
+
+    Phie_ext = genRegMatrix(model,Y,U,ee_s1)$P
+
+    th_ARMAX_hat = ginv(Phie_ext) %*% Ye
+
+    # --- stop conditions
+    dlt1[i] = sqrt(sum((th_ARMAX_hat - th_ARMAX_hat0)^2))
+    th_ARMAX_hat0 = th_ARMAX_hat
+
+    # calculate error and pad zeros for the initial conditions
+    ee_s = ee_s1
+    ee_s1 = c(rep(0,p-1),Ye - (Phie_ext %*% th_ARMAX_hat)[,])
+    dlt2[i] = sqrt(sum((ee_s1 - ee_s)^2))
+
+    # save estimated vectors
+    Th_ARMAX_hat[,i] = th_ARMAX_hat
+  }
+
+  theta = th_ARMAX_hat[,]
+
+  model$coefficients = theta
+
+  model$terms = colnames(Phie_ext)
+
+  return(model)
+
 }
 
 #' @title Estimate NARX model

@@ -1,5 +1,5 @@
-Package: nsysid
-Title: Nonlinear System Identification
+Package: narmax
+Title: NARMAX: Nonlinear System Identification
 Version: 0.1
 Authors@R: c(
   person("Helon Ayala Hultmann", "Ayala", email = "helonayala@gmail.com", role = c("cre", "aut")),
