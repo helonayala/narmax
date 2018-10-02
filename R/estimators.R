@@ -27,8 +27,6 @@ estimate.arx = function (model, Y, U, niter = 10) {
 
   model$terms = colnames(Phie)
 
-  print(theta)
-
   return(model)
 }
 
@@ -79,8 +77,6 @@ estimate.armax = function (model, Y, U, niter = 10) {
   model$coefficients = theta
 
   model$terms = colnames(Phie_ext)
-
-  print(theta)
 
   return(model)
 
