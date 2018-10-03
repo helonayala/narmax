@@ -52,8 +52,7 @@ genRegMatrix.arx = function (model, Y, U, E = NULL) {
   rownames(obj$P) = rowPhi
 
   if (!is.null(model$terms)) {
-    termIndexes = findTermIndexes(obj$P, model$terms)
-    obj$P = subsetMatrix(obj$P, NULL, termIndexes)
+    obj$P = subsetMatrix(obj$P, NULL, model$terms)
   }
 
   obj$Pp = obj$P
@@ -111,8 +110,7 @@ genRegMatrix.armax = function (model, Y, U, E = NULL) {
   rownames(obj$P) = rowPhi
 
   if (!is.null(model$terms)) {
-    termIndexes = findTermIndexes(obj$P, model$terms)
-    obj$P = subsetMatrix(obj$P, NULL, termIndexes)
+    obj$P = subsetMatrix(obj$P, NULL, model$terms)
   }
   errIndexes = grepl('e(', colnames(obj$P), fixed = TRUE)
 
@@ -186,8 +184,7 @@ genRegMatrix.narx = function (model, Y, U, E = NULL) {
   }
 
   if (!is.null(model$terms)) {
-    termIndexes = findTermIndexes(obj$P, model$terms)
-    obj$P = subsetMatrix(obj$P, NULL, termIndexes)
+    obj$P = subsetMatrix(obj$P, NULL, model$terms)
   }
 
   obj$Pp = obj$P
@@ -253,8 +250,7 @@ genRegMatrix.narmax = function (model, Y, U, E = NULL) {
   }
 
   if (!is.null(model$terms)) {
-    termIndexes = findTermIndexes(obj$P, model$terms)
-    obj$P = subsetMatrix(obj$P, NULL, termIndexes)
+    obj$P = subsetMatrix(obj$P, NULL, model$terms)
   }
 
   errIndexes = grepl('e(', colnames(obj$P), fixed = TRUE)

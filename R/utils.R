@@ -16,14 +16,16 @@ clearWorkspace = function () {
 #' @param cols Cols subsetter
 #' @export
 subsetMatrix = function (mat, rows, cols) {
-  if (is.null(rows)) rows = 1:nrow(mat)
-  if (is.null(cols)) cols = 1:ncol(mat)
   names = dimnames(mat)
+  rows = if (is.null(rows)) 1:nrow(mat) else rows
+  cols = if (is.null(cols)) 1:ncol(mat) else cols
+  rownames = if (typeof(rows) == 'character') rows else names[[1]][rows]
+  colnames = if (typeof(cols) == 'character') cols else names[[2]][cols]
   submat = matrix(
     mat[rows, cols],
     nrow = length(rows),
     ncol = length(cols),
-    dimnames = list(names[[1]][rows], names[[2]][cols])
+    dimnames = list(rownames, colnames)
   )
   return(submat)
 }
@@ -35,8 +37,10 @@ subsetMatrix = function (mat, rows, cols) {
 findTermIndexes = function (P, terms) {
   names = colnames(P)
   indexes = which(names == terms[1])
-  for (i in 2:length(terms)) {
-    indexes = c(indexes, which(names == terms[i]))
+  if (length(terms) > 1) {
+    for (i in 2:length(terms)) {
+      indexes = c(indexes, which(names == terms[i]))
+    }
   }
   return(indexes)
 }
@@ -127,15 +131,10 @@ M_spec = function(u){
 #' @return R2
 #' @export
 calcR2 = function(real,est){
-
   SSE = sum((real - est)^2)
-
   avg_real = mean(real)
-
   sum2 = sum((real - avg_real)^2)
-
   R2 = 1 - SSE / sum2
-
   return(R2)
 }
 
