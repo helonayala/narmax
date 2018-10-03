@@ -5,10 +5,10 @@
 clearWorkspace()
 
 # load libraries
-# library(ggplot2) # fancy plots
-# library(signal)  # filter for input signal
-# library(MASS)    # use ginv
-# library(tidyverse) # data utils
+library(ggplot2) # fancy plots
+library(signal)  # filter for input signal
+library(MASS)    # use ginv
+library(tidyverse) # data utils
 # library(narmax)
 
 # load functions
@@ -51,13 +51,19 @@ ye = rnorm(N,mean=ye,sd=sd_noise)
 yvor = yv
 yv = rnorm(N,mean=yv,sd=sd_noise)
 
+<<<<<<< HEAD
 mdl = estimate(mdl,ye,ue)
+=======
+
+mdl = estimate(mdl, ye, ue)
+>>>>>>> e626c60029abc7ebe4805ac2ef3a6a051d2ff28c
 
 Yp = predict(mdl, ye, ue, K = 1)
 Ys = predict(mdl, ye, ue, K = 0)
 
 p = mdl$maxLag
-df = data.frame(time = time[p:N], y = y[p:N], yp = Yp, ys = Ys)
+time = 1:length(ye)
+df = data.frame(time = time[p:N], y = ye[p:N], yp = Yp, ys = Ys)
 
 p = ggplot(data = df, aes(x = time)) +
   geom_line(aes(y = y)) +

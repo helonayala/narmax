@@ -2,7 +2,7 @@
 predict = function (model, ...) UseMethod('predict')
 
 #' @export
-predict.arx = function (model, ...) {
+predict.arx = function (model, y, u, K = 1, ...) {
   cat('Running arx prediction ... ')
   prediction = predict.default(model, y, u, K)
   cat('Done\n')
@@ -10,7 +10,7 @@ predict.arx = function (model, ...) {
 }
 
 #' @export
-predict.armax = function (model, y, u, K) {
+predict.armax = function (model, y, u, K = 1, ...) {
   cat('Running armax prediction ... ')
   prediction = predict.default(model, y, u, K)
   cat('Done\n')
@@ -18,7 +18,7 @@ predict.armax = function (model, y, u, K) {
 }
 
 #' @export
-predict.narx = function (model, ...) {
+predict.narx = function (model, y, u, K = 1, ...) {
   cat('Running narx prediction ... ')
   prediction = predict.default(model, y, u, K)
   cat('Done\n')
@@ -79,6 +79,7 @@ oneStepAhead = function (model, y, u, ...) {
 freeRun = function (model, y, u, K, ...) {
   theta = as.matrix(model$coefficients)
   p = model$maxLag
+  e = rep(0, length(y))
 
   ySlice = y[1:(p - 1)]
   uSlice = u[1:(p - 1)]
