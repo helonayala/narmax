@@ -2,10 +2,7 @@
 # helon - 4/9/18
 # mec2015 - system identification - puc-rio
 
-clearWorkspace()
-library(ggplot2)
-
-# library(tidyverse)
+library(tidyverse)
 # library(MASS)
 # source("library_sysid.R")
 set.seed(0) # reproducibility
@@ -37,24 +34,54 @@ ny = 2
 ne = 2
 nl = 2
 
-model = narmax(ny, nu, ne, nl)
+mdl = narmax(ny, nu, ne, nl)
 
 # Step 2: Estimate the model
-model = estimate(model, y, u, rho_p, rho_n)
-print(model)
+mdl = estimate(mdl, y, u, rho_p, rho_n)
+print(mdl)
 
-Yp = c(y[1:2], predict(model, y, u, K = 1))
-R = y - Yp
-# Ys = predict(model, y, u, K = 0)
-time = 1:N
+Ys = predict(mdl, y, u, K = 0)
+Yp = predict(mdl, y, u, K = 1)
 
-df = data.frame(time, y, Yp, R, e, InitE)
+p = mdl$maxLag
+time = p:N
+Ep = y[p:N] - Yp
+Es = y[p:N] - Ys
+Up = u[p:N]
 
-p1 = ggplot(data = df, aes(x = time)) +
-  geom_line(aes(y = InitE)) +
-  geom_line(aes(y = R), color = "red")
-  # geom_line(aes(y = ys), color = "blue")
+df = tibble(time,Y=y[p:N],Yp,Ys,Ep,Es) %>% gather(variable, measurement, -time)
 
-p2 = ggplot(data = df, aes(x = time)) +
-  geom_line(aes(y = y)) +
-  geom_line(aes(y = Yp), color="red")
+head(df)
+
+# predictions
+p1 = ggplot(filter(df, variable %in% c("Y","Ys"))) +
+  geom_line(aes(x = time,y = measurement,color=variable)) +
+  labs(title = "Free-run simulation\n", x = "Sample", y = "Output", color = "\n") +
+  scale_color_manual(labels = c("Measurement", "Prediction"), values = c("black", "blue")) +
+  theme(legend.position="bottom")
+
+p2 = ggplot(filter(df, variable %in% c("Y","Yp"))) +
+  geom_line(aes(x = time,y = measurement,color=variable)) +
+  labs(title = "One-step-ahead prediction\n", x = "Sample", y = "Output", color = "\n") +
+  scale_color_manual(labels = c("Measurement", "Prediction"), values = c("black", "blue")) +
+  theme(legend.position="none")
+
+multiplot(p1,p2)
+
+# residuals
+p3 = ggplot(filter(df, variable %in% c("Es"))) +
+  geom_line(aes(x = time,y = measurement)) +
+  labs(title = "Free-run simulation error\n", x = "Sample", y = "Error")
+
+p4 = ggplot(filter(df, variable %in% c("Ep"))) +
+  geom_line(aes(x = time,y = measurement)) +
+  labs(title = "One-step-ahead error\n", x = "Sample", y = "Error")
+
+multiplot(p3,p4)
+
+g = xcorrel(Ep,Up)
+
+multiplot(g$g1,g$g2,g$g3,g$g4,g$g5)
+
+
+
