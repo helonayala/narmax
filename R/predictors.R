@@ -10,7 +10,7 @@ predict.arx = function (model, ...) {
 }
 
 #' @export
-predict.armax = function () {
+predict.armax = function (model, y, u, K) {
   cat('Running armax prediction ... ')
   prediction = predict.default(model, y, u, K)
   cat('Done\n')
