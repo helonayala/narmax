@@ -12,7 +12,10 @@ LazyData: true
 Imports: 
     ggplot2,
     stringr,
-    MASS
+    MASS,
+    signal,
+    reshape2,
+    latex2exp
 RoxygenNote: 6.1.0
 Encoding: UTF-8
 Suggests: 
