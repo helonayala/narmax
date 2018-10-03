@@ -21,7 +21,7 @@ estimate.arx = function (model, Y, U, niter = 10) {
   Ye   = genTarget(model,Y)
 
   # estimate parameters -----------------------------------------------------
-  theta = ginv(Phie) %*% Ye
+  theta = MASS::ginv(Phie) %*% Ye
 
   model$coefficients = theta
 
@@ -46,7 +46,7 @@ estimate.armax = function (model, Y, U, niter = 10) {
 
   # estimate parameters -----------------------------------------------------
   Th_ARMAX_hat = matrix(0,ny+nu+ne,niter)
-  th_ARX_hat = ginv(Phie) %*% Ye
+  th_ARX_hat = MASS::ginv(Phie) %*% Ye
   th_ARX_hat0 = th_ARX_hat
   th_ARMAX_hat0 = c(th_ARX_hat0,rep(0,ne))
   ee_s1 = c(rep(0,p-1),Ye - (Phie %*% th_ARX_hat))
@@ -57,7 +57,7 @@ estimate.armax = function (model, Y, U, niter = 10) {
 
     Phie_ext = genRegMatrix(model,Y,U,ee_s1)$P
 
-    th_ARMAX_hat = ginv(Phie_ext) %*% Ye
+    th_ARMAX_hat = MASS::ginv(Phie_ext) %*% Ye
 
     # --- stop conditions
     dlt1[i] = sqrt(sum((th_ARMAX_hat - th_ARMAX_hat0)^2))

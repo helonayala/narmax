@@ -4,6 +4,7 @@
 
 clearWorkspace()
 
+library(ggplot2)
 # allows reproducibility
 set.seed(42)
 #model parameters
@@ -37,9 +38,9 @@ for (k in 5:N){
   yv[k] = phiv %*% th
 }
 yeor = ye
-ye = rnorm(N,mean=ye,sd=sd_noise)
+ye = ye + ee
 yvor = yv
-yv = rnorm(N,mean=yv,sd=sd_noise)
+yv = yv + ev
 
 mdl = estimate(mdl, ye, ue)
 

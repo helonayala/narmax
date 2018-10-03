@@ -59,7 +59,7 @@ oneStepAhead = function (model, y, u, ...) {
     return(yp)
   }
 
-  e = c(rep(0, p - 1), y[p:N] - yp)
+  e = c(rep(0, p - 1), y[p:N] - yp[,])
   eLast = e
   errDiff = 100
 
@@ -68,7 +68,7 @@ oneStepAhead = function (model, y, u, ...) {
   while (maxIterations >= iterations && errDiff > 1e-8) {
     P = genRegMatrix(model, y, u, e)$P
     yp = P %*% theta
-    e = c(rep(0, p - 1), y[p:N] - yp)
+    e = c(rep(0, p - 1), y[p:N] - yp[,])
     errDiff = sum(abs((e - eLast)))
     eLast = e
     iterations = iterations + 1
