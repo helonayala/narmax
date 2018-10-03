@@ -16,6 +16,7 @@ set.seed(0) # reproducibility
 N = 400
 u = rnorm(N, mean = 0, sd=1)
 e = rnorm(N, mean = 0, sd=0.04^2)
+InitE = e
 y = rep(0, length(u))
 for (k in 3:N) {
   y[k] = 0.5*y[k-1] +
@@ -42,16 +43,18 @@ model = narmax(ny, nu, ne, nl)
 model = estimate(model, y, u, rho_p, rho_n)
 print(model)
 
-Yp = predict(model, y, u, K = 1)
-Ys = predict(model, y, u, K = 0)
+Yp = c(y[1:2], predict(model, y, u, K = 1))
+R = y - Yp
+# Ys = predict(model, y, u, K = 0)
 time = 1:N
-p = model$maxLag
 
-df = data.frame(time = time[p:N], y = y[p:N], yp = Yp, ys = Ys)
+df = data.frame(time, y, Yp, R, e, InitE)
 
-p = ggplot(data = df, aes(x = time)) +
+p1 = ggplot(data = df, aes(x = time)) +
+  geom_line(aes(y = InitE)) +
+  geom_line(aes(y = R), color = "red")
+  # geom_line(aes(y = ys), color = "blue")
+
+p2 = ggplot(data = df, aes(x = time)) +
   geom_line(aes(y = y)) +
-  # geom_line(aes(y = yp), color = "red") +
-  geom_line(aes(y = ys), color = "blue")
-
-plot(p)
+  geom_line(aes(y = Yp), color="red")

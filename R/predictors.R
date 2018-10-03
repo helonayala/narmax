@@ -47,25 +47,33 @@ predict.default = function (model, y, u, K, ...) {
 
 oneStepAhead = function (model, y, u, ...) {
   theta = as.matrix(model$coefficients)
+  e = rep(0, length(y))
   p = model$maxLag
-
-  ySlice = y[1:(p - 1)]
-  uSlice = u[1:(p - 1)]
-  eSlice = e[1:(p - 1)]
-
   N = length(y)
 
-  for (k in p:N) {
-    auxY = c(y[(k - p):(k - 1)], 0)
-    auxU = c(uSlice[(k - p):(k - 1)], 0)
-    auxE = c(eSlice[(k - p):(k - 1)], 0)
-    phiK = genRegMatrix(model, auxY, auxU, auxE)$P
-    ySlice[k] = (phiK %*% theta)[1]
-    uSlice[k] = u[k]
-    eSlice[k] = y[k] - ySlice[k]
+  P = genRegMatrix(model, y, u, e)$P
+  yp = P %*% theta
+
+  # If e[k] does not exist on model, return the prediction
+  if (!any(grepl('e(', model$terms, fixed = TRUE))) {
+    return(yp)
   }
 
-  return(ySlice[p:N])
+  e = c(rep(0, p - 1), y[p:N] - yp)
+  eLast = e
+  errDiff = 100
+
+  maxIterations = model$maxLag* 100
+  iterations = 1
+  while (maxIterations >= iterations && errDiff > 1e-8) {
+    P = genRegMatrix(model, y, u, e)$P
+    yp = P %*% theta
+    e = c(rep(0, p - 1), y[p:N] - yp)
+    errDiff = sum(abs((e - eLast)))
+    eLast = e
+    iterations = iterations + 1
+  }
+  return(yp)
 }
 
 freeRun = function (model, y, u, K, ...) {
