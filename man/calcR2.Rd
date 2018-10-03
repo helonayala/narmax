@@ -17,9 +17,3 @@ R2
 \description{
 Calculate R2 (multiple correlation coefficient) for a predicted value
 }
-\examples{
-t=seq(from = 0, to = 400*2*pi, by = 0.01)
-t = t[1:2^14]
-u=sin(2*pi*t)
-M_spec(u)
-}
