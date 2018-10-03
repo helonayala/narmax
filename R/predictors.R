@@ -73,7 +73,7 @@ oneStepAhead = function (model, y, u, ...) {
     eLast = e
     iterations = iterations + 1
   }
-  return(yp)
+  return(yp[,])
 }
 
 freeRun = function (model, y, u, K, ...) {
