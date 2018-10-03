@@ -138,3 +138,114 @@ calcR2 = function(real,est){
   return(R2)
 }
 
+#' @title Multiple plot function
+#'
+#' @description Taken from http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2::ggplot2)/
+#' ggplot2::ggplot objects can be passed in ..., or to plotlist (as a list of ggplot2::ggplot objects)
+#' - cols:   Number of columns in layout
+#' - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#' If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+#' then plot 1 will go in the upper left, 2 will go in the upper right, and
+#' 3 will go all the way across the bottom.
+#' @export
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+  if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+
+#' @title Plot correlation based tests
+#'
+#' @description See Billings book, chapter 5
+#' @export
+xcorrel = function(e,u) {
+
+  maxlag = 25
+  N = length(u)
+
+  conf_factor = 1.96/sqrt(N)
+  lag_vec = -maxlag:maxlag
+
+  EE = crossco(e,e,maxlag)
+  UE = crossco(u,e,maxlag)
+  EEU = crossco(e[1:(N-1)],e[2:N]*u[2:N],maxlag)
+  U2E = crossco(u^2 - mean(u^2),e,maxlag)
+  U2E2 = crossco(u^2 - mean(u^2),e^2,maxlag)
+
+  EEdf = reshape2::melt(data.frame(EE = EE,lag = lag_vec,conf_factor1 = conf_factor,conf_factor2 = -conf_factor),id.vars = "lag")
+  UEdf = reshape2::melt(data.frame(UE = UE,lag = lag_vec,conf_factor1 = conf_factor,conf_factor2 = -conf_factor),id.vars = "lag")
+  EEUdf = reshape2::melt(data.frame(EEU = EEU,lag = lag_vec,conf_factor1 = conf_factor,conf_factor2 = -conf_factor),id.vars = "lag")
+  U2Edf = reshape2::melt(data.frame(U2E = U2E,lag = lag_vec,conf_factor1 = conf_factor,conf_factor2 = -conf_factor),id.vars = "lag")
+  U2E2df = reshape2::melt(data.frame(U2E2 = U2E2,lag = lag_vec,conf_factor1 = conf_factor,conf_factor2 = -conf_factor),id.vars = "lag")
+
+  g = list()
+
+  g$g1 = ggplot2::ggplot(EEdf,ggplot2::aes(x=lag,y=value,group=variable)) + ggplot2::geom_line(ggplot2::aes(linetype=variable)) + ggplot2::theme(legend.position="none",axis.title.x=ggplot2:: element_blank()) +
+    ggplot2::ylab(latex2exp::TeX('$\\phi_{\\xi\\xi}(\\tau)$')) + ggplot2:: ylim(-1,1) + ggplot2::xlim(-maxlag,maxlag)
+  g$g2 = ggplot2::ggplot(UEdf,ggplot2::aes(x=lag,y=value,group=variable)) + ggplot2::geom_line(ggplot2::aes(linetype=variable)) + ggplot2::theme(legend.position="none",axis.title.x=ggplot2:: element_blank()) +
+    ggplot2::ylab(latex2exp::TeX('$\\phi_{u\\xi}(\\tau)$')) + ggplot2:: ylim(-1,1) + ggplot2::xlim(-maxlag,maxlag)
+  g$g3 = ggplot2::ggplot(EEUdf,ggplot2::aes(x=lag,y=value,group=variable)) + ggplot2::geom_line(ggplot2::aes(linetype=variable)) + ggplot2::theme(legend.position="none",axis.title.x=ggplot2:: element_blank()) +
+    ggplot2::ylab(latex2exp::TeX('$\\phi_{\\xi(\\xi u)}(\\tau)$')) + ggplot2:: ylim(-1,1) + ggplot2::xlim(0,maxlag)
+  g$g4 = ggplot2::ggplot(U2Edf,ggplot2::aes(x=lag,y=value,group=variable)) + ggplot2::geom_line(ggplot2::aes(linetype=variable)) + ggplot2::theme(legend.position="none",axis.title.x=ggplot2:: element_blank()) +
+    ggplot2::ylab(latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi}(\\tau)$')) + ggplot2:: ylim(-1,1) + ggplot2::xlim(-maxlag,maxlag)
+  g$g5 = ggplot2::ggplot(U2E2df,ggplot2::aes(x=lag,y=value,group=variable)) + ggplot2::geom_line(ggplot2::aes(linetype=variable)) + ggplot2::theme(legend.position="none") +
+    ggplot2::ylab(latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi^2}(\\tau)$')) + ggplot2::xlab(latex2exp::TeX('$\\tau')) + ggplot2:: ylim(-1,1) + ggplot2::xlim(-maxlag,maxlag)
+
+  return(g)
+}
+
+#' @title Calculate normalized cross-correlation of 2 signals
+#'
+#' @description See Billings book, chapter 5
+#' @export
+crossco = function(v,w,maxlag){
+  v = v-mean(v)
+  w = w-mean(w)
+
+  nvw = length(v)
+
+  normcoef = sqrt(sum(v*v)*sum(w*w))
+  coefs = rep(0,maxlag+1)
+  for (k in 0:maxlag){
+    coefs[k+1] = sum(v[1:(nvw-k)]*w[(k+1):nvw])/normcoef
+  }
+
+  coefs2 = rep(0,maxlag)
+  for(k in 1:maxlag){
+    coefs2[k] = sum(w[1:(nvw-k)]*v[(k+1):nvw])/normcoef
+  }
+  coefs = c(rev(coefs2),coefs)
+
+  return(coefs)
+}
