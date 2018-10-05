@@ -2,7 +2,8 @@
 title: "NARMAX system identification example"
 author: "Hultmann Ayala, Helon Vicente"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: github_document
+#output: rmarkdown::html_vignette
 ---
 
 Load libraries 
