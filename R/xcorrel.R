@@ -16,11 +16,11 @@ xcorrel = function(e,u) {
   U2E = crossco(u^2 - mean(u^2),e,maxlag)
   U2E2 = crossco(u^2 - mean(u^2),e^2,maxlag)
 
-  df1 = tidyr::gather(tibble::tibble(lag = -maxlag:maxlag,EE,UE),
+  df1 = tidyr::gather(data.frame(lag = -maxlag:maxlag,EE,UE),
                       variable, measurement, -lag,factor_key = TRUE)
-  df2 = tidyr::gather(tibble::tibble(lag = 0:maxlag, EEU = EEU[(maxlag+1):(2*maxlag+1)]),
+  df2 = tidyr::gather(data.frame(lag = 0:maxlag, EEU = EEU[(maxlag+1):(2*maxlag+1)]),
                       variable, measurement, -lag,factor_key = TRUE)
-  df3 = tidyr::gather(tibble::tibble(lag = -maxlag:maxlag,U2E,U2E2),
+  df3 = tidyr::gather(data.frame(lag = -maxlag:maxlag,U2E,U2E2),
                       variable, measurement, -lag,factor_key = TRUE)
 
   df = rbind(df1,df2,df3)
@@ -38,7 +38,6 @@ xcorrel = function(e,u) {
     ggplot2::ylab("") +
     ggplot2::facet_grid(~variable, scales = "free",labeller = ggplot2::label_parsed) +
     ggplot2::theme(strip.text.x = ggplot2::element_text(size = 20))
-
 
   return(g)
 }
