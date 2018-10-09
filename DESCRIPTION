@@ -10,12 +10,12 @@ Depends: R (>= 3.1.0)
 License: GPL-3
 LazyData: true
 Imports: 
-    ggplot2,
     stringr,
     MASS,
     signal,
     reshape2,
-    latex2exp
+    latex2exp,
+    tidyverse
 RoxygenNote: 6.1.0
 Encoding: UTF-8
 Suggests: 

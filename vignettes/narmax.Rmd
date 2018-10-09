@@ -74,7 +74,7 @@ Up = u[p:N]
 
 Store data in data frames for nice plotting
 ```{r}
-df = tibble(time,Y=y[p:N],Yp,Ys,Ep,Es) %>% gather(variable, measurement, -time)
+df = data.frame(time,Y=y[p:N],Yp,Ys,Ep,Es) %>% gather(variable, measurement, -time)
 ```
 
 FR plot (predictions)
@@ -117,6 +117,6 @@ g = xcorrel(Ep,Up)
 
 Print correlation-based tests
 ```{r}
-multiplot(g$g1,g$g2,g$g3,g$g4,g$g5)
+plot(g)
 ```
 

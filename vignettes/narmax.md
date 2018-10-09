@@ -141,7 +141,7 @@ g = xcorrel(Ep,Up)
 Print correlation-based tests
 
 ``` r
-multiplot(g$g1,g$g2,g$g3,g$g4,g$g5)
+print(g)
 ```
 
     ## Warning: Removed 75 rows containing missing values (geom_path).
