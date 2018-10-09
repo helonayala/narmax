@@ -16,24 +16,29 @@ xcorrel = function(e,u) {
   U2E = crossco(u^2 - mean(u^2),e,maxlag)
   U2E2 = crossco(u^2 - mean(u^2),e^2,maxlag)
 
-  EEdf = reshape2::melt(data.frame(EE = EE,lag = lag_vec,conf_factor1 = conf_factor,conf_factor2 = -conf_factor),id.vars = "lag")
-  UEdf = reshape2::melt(data.frame(UE = UE,lag = lag_vec,conf_factor1 = conf_factor,conf_factor2 = -conf_factor),id.vars = "lag")
-  EEUdf = reshape2::melt(data.frame(EEU = EEU,lag = lag_vec,conf_factor1 = conf_factor,conf_factor2 = -conf_factor),id.vars = "lag")
-  U2Edf = reshape2::melt(data.frame(U2E = U2E,lag = lag_vec,conf_factor1 = conf_factor,conf_factor2 = -conf_factor),id.vars = "lag")
-  U2E2df = reshape2::melt(data.frame(U2E2 = U2E2,lag = lag_vec,conf_factor1 = conf_factor,conf_factor2 = -conf_factor),id.vars = "lag")
+  df1 = tidyr::gather(tibble::tibble(lag = -maxlag:maxlag,EE,UE),
+                      variable, measurement, -lag,factor_key = TRUE)
+  df2 = tidyr::gather(tibble::tibble(lag = 0:maxlag, EEU = EEU[(maxlag+1):(2*maxlag+1)]),
+                      variable, measurement, -lag,factor_key = TRUE)
+  df3 = tidyr::gather(tibble::tibble(lag = -maxlag:maxlag,U2E,U2E2),
+                      variable, measurement, -lag,factor_key = TRUE)
 
-  g = list()
+  df = rbind(df1,df2,df3)
 
-  g$g1 = ggplot2::ggplot(EEdf,ggplot2::aes(x=lag,y=value,group=variable)) + ggplot2::geom_line(ggplot2::aes(linetype=variable)) + ggplot2::theme(legend.position="none",axis.title.x=ggplot2:: element_blank()) +
-    ggplot2::ylab(latex2exp::TeX('$\\phi_{\\xi\\xi}(\\tau)$')) + ggplot2:: ylim(-1,1) + ggplot2::xlim(-maxlag,maxlag)
-  g$g2 = ggplot2::ggplot(UEdf,ggplot2::aes(x=lag,y=value,group=variable)) + ggplot2::geom_line(ggplot2::aes(linetype=variable)) + ggplot2::theme(legend.position="none",axis.title.x=ggplot2:: element_blank()) +
-    ggplot2::ylab(latex2exp::TeX('$\\phi_{u\\xi}(\\tau)$')) + ggplot2:: ylim(-1,1) + ggplot2::xlim(-maxlag,maxlag)
-  g$g3 = ggplot2::ggplot(EEUdf,ggplot2::aes(x=lag,y=value,group=variable)) + ggplot2::geom_line(ggplot2::aes(linetype=variable)) + ggplot2::theme(legend.position="none",axis.title.x=ggplot2:: element_blank()) +
-    ggplot2::ylab(latex2exp::TeX('$\\phi_{\\xi(\\xi u)}(\\tau)$')) + ggplot2:: ylim(-1,1) + ggplot2::xlim(0,maxlag)
-  g$g4 = ggplot2::ggplot(U2Edf,ggplot2::aes(x=lag,y=value,group=variable)) + ggplot2::geom_line(ggplot2::aes(linetype=variable)) + ggplot2::theme(legend.position="none",axis.title.x=ggplot2:: element_blank()) +
-    ggplot2::ylab(latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi}(\\tau)$')) + ggplot2:: ylim(-1,1) + ggplot2::xlim(-maxlag,maxlag)
-  g$g5 = ggplot2::ggplot(U2E2df,ggplot2::aes(x=lag,y=value,group=variable)) + ggplot2::geom_line(ggplot2::aes(linetype=variable)) + ggplot2::theme(legend.position="none") +
-    ggplot2::ylab(latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi^2}(\\tau)$')) + ggplot2::xlab(latex2exp::TeX('$\\tau')) + ggplot2:: ylim(-1,1) + ggplot2::xlim(-maxlag,maxlag)
+  levels(df$variable) =  c(latex2exp::TeX('$\\phi_{\\xi\\xi}(\\tau)$'),
+                           latex2exp::TeX('$\\phi_{u\\xi}(\\tau)$'),
+                           latex2exp::TeX('$\\phi_{\\xi(\\xi u)}(\\tau)$'),
+                           latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi}(\\tau)$'),
+                           latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi^2}(\\tau)$'))
+
+  g = ggplot2::ggplot(df) +
+    ggplot2::geom_line(ggplot2::aes(x = lag, y = measurement)) + #,color = variable)) +
+    ggplot2::geom_hline(yintercept=conf_factor, linetype="dashed") + ggplot2::geom_hline(yintercept=-conf_factor, linetype="dashed") +
+    ggplot2::ylim(-1,1)  +
+    ggplot2::ylab("") +
+    ggplot2::facet_grid(~variable, scales = "free",labeller = ggplot2::label_parsed) +
+    ggplot2::theme(strip.text.x = ggplot2::element_text(size = 20))
+
 
   return(g)
 }
