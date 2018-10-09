@@ -1,5 +1,0 @@
-model %>% compile(
-    optimizer = "rmsprop",
-    loss = "mse",
-    metrics = c("mae")
-)
