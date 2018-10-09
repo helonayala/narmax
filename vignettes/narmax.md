@@ -1,7 +1,7 @@
 NARMAX system identification example
 ================
 Hultmann Ayala, Helon Vicente
-2018-10-05
+2018-10-09
 
 Load libraries
 
@@ -84,7 +84,7 @@ Up = u[p:N]
 Store data in data frames for nice plotting
 
 ``` r
-df = tibble(time,Y=y[p:N],Yp,Ys,Ep,Es) %>% gather(variable, measurement, -time)
+df = data.frame(time,Y=y[p:N],Yp,Ys,Ep,Es) %>% gather(variable, measurement, -time)
 ```
 
 FR plot (predictions)
@@ -97,7 +97,7 @@ ggplot(filter(df, variable %in% c("Y","Ys"))) +
   theme(legend.position="bottom")
 ```
 
-![](narmax_files/figure-markdown_github/unnamed-chunk-9-1.png)
+![](narmax_files/figure-markdown_github/unnamed-chunk-23-1.png)
 
 OSA plot (predictions)
 
@@ -109,7 +109,7 @@ ggplot(filter(df, variable %in% c("Y","Yp"))) +
   theme(legend.position="bottom")
 ```
 
-![](narmax_files/figure-markdown_github/unnamed-chunk-10-1.png)
+![](narmax_files/figure-markdown_github/unnamed-chunk-24-1.png)
 
 Arrange FR plot (residuals)
 
@@ -120,7 +120,7 @@ ggplot(filter(df, variable %in% c("Es"))) +
   labs(title = "Free-run simulation error\n", x = "Sample", y = "Error")
 ```
 
-![](narmax_files/figure-markdown_github/unnamed-chunk-11-1.png)
+![](narmax_files/figure-markdown_github/unnamed-chunk-25-1.png)
 
 Arrange OSA plot (residuals)
 
@@ -130,7 +130,7 @@ ggplot(filter(df, variable %in% c("Ep"))) +
   labs(title = "One-step-ahead error\n", x = "Sample", y = "Error")
 ```
 
-![](narmax_files/figure-markdown_github/unnamed-chunk-12-1.png)
+![](narmax_files/figure-markdown_github/unnamed-chunk-26-1.png)
 
 Arrange residuals/inputs correlation-based tests
 
@@ -141,9 +141,7 @@ g = xcorrel(Ep,Up)
 Print correlation-based tests
 
 ``` r
-print(g)
+plot(g)
 ```
 
-    ## Warning: Removed 75 rows containing missing values (geom_path).
-
-![](narmax_files/figure-markdown_github/unnamed-chunk-14-1.png)
+![](narmax_files/figure-markdown_github/unnamed-chunk-28-1.png)
