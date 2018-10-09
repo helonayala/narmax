@@ -31,3 +31,5 @@ Collate:
     'predictors.R'
     'printers.R'
     'utils.R'
+    'xcorrel.R'
+    'crossco.R'
