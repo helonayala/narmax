@@ -34,6 +34,14 @@ predict.narmax = function (model, y, u, K = 1, ...) {
 }
 
 #' @export
+predict.ann  = function (model, y, u, K = 1, ...) {
+  cat('Running ann prediction ... ')
+  prediction = predict.default.ann(model, y, u, K)
+  cat('Done\n')
+  return(prediction)
+}
+
+#' @export
 predict.default = function (model, y, u, K, ...) {
   if (K < 0) stop('K must be greater or equal to zero')
   method = switch(
@@ -41,6 +49,18 @@ predict.default = function (model, y, u, K, ...) {
     "1" = oneStepAhead,
     "0" = freeRun,
     kStepAhead
+  )
+  return(method(model, y, u, K))
+}
+
+#' @export
+predict.default.ann = function (model, y, u, K, ...) {
+  if (K < 0) stop('K must be greater or equal to zero')
+  method = switch(
+    as.character(K),
+    "1" = oneStepAhead.ann,
+    "0" = freeRun.ann,
+    kStepAhead.ann
   )
   return(method(model, y, u, K))
 }
@@ -100,6 +120,25 @@ freeRun = function (model, y, u, K, ...) {
   return(ySlice[p:N])
 }
 
+
 kStepAhead = function (model, y, u, K) {
+  cat('K-steap-ahead is looking into the future!!!')
+}
+
+
+oneStepAhead.ann = function (model, y, u, ...) {
+
+
+  return(ySlice[p:N])
+}
+
+freeRun.ann = function (model, y, u, K, ...) {
+
+
+  return(ySlice[p:N])
+}
+
+
+kStepAhead.ann = function (model, y, u, K) {
   cat('K-steap-ahead is looking into the future!!!')
 }
