@@ -15,7 +15,8 @@ Imports:
     signal,
     reshape2,
     latex2exp,
-    tidyverse
+    tidyverse,
+    keras
 RoxygenNote: 6.1.0
 Encoding: UTF-8
 Suggests: 
