@@ -27,7 +27,7 @@ predict.narx = function (model, y, u, K = 1, ...) {
 
 #' @export
 predict.narmax = function (model, y, u, K = 1, ...) {
-  cat('Running narmax prediction ... ')
+  cat('Running narmax prediction ... \n')
   prediction = predict.default(model, y, u, K)
   cat('Done\n')
   return(prediction)
@@ -83,7 +83,8 @@ oneStepAhead = function (model, y, u, ...) {
   eLast = e
   errDiff = 100
 
-  maxIterations = model$maxLag* 100
+  # maxIterations = model$maxLag* 100
+  maxIterations = 10
   iterations = 1
   while (maxIterations >= iterations && errDiff > 1e-8) {
     P = genRegMatrix(model, y, u, e)$P
@@ -92,6 +93,10 @@ oneStepAhead = function (model, y, u, ...) {
     errDiff = sum(abs((e - eLast)))
     eLast = e
     iterations = iterations + 1
+    print(iterations)
+    if ( iterations == 15){
+      a=2
+    }
   }
   return(yp[,])
 }
@@ -108,9 +113,11 @@ freeRun = function (model, y, u, K, ...) {
   N = length(y)
 
   for (k in p:N) {
-    auxY = c(ySlice[(k - p):(k - 1)], 0)
-    auxU = c(uSlice[(k - p):(k - 1)], 0)
-    auxE = c(eSlice[(k - p):(k - 1)], 0)
+    svMisc::progress(k/N*100, progress.bar = TRUE)
+
+    auxY = c(ySlice[(k - p + 1):(k - 1)], 0)
+    auxU = c(uSlice[(k - p + 1):(k - 1)], 0)
+    auxE = c(eSlice[(k - p + 1):(k - 1)], 0)
     phiK = genRegMatrix(model, auxY, auxU, auxE)$P
     ySlice[k] = (phiK %*% theta)[1]
     uSlice[k] = u[k]
@@ -120,20 +127,37 @@ freeRun = function (model, y, u, K, ...) {
   return(ySlice[p:N])
 }
 
-
 kStepAhead = function (model, y, u, K) {
   cat('K-steap-ahead is looking into the future!!!')
 }
 
-
 oneStepAhead.ann = function (model, y, u, ...) {
 
+  osa_inp = genRegMatrix(model,y,u)$P
 
-  return(ySlice[p:N])
+  yh = keras::predict_on_batch(model$mdl, x = osa_inp)
+
+  return(yh[,])
 }
 
 freeRun.ann = function (model, y, u, K, ...) {
 
+  p = model$maxLag
+
+  ySlice = y[1:(p - 1)]
+  uSlice = u[1:(p - 1)]
+
+  N = length(y)
+
+  for (k in p:N) {
+    svMisc::progress(k/N*100, progress.bar = TRUE)
+
+    auxY = c(ySlice[(k - p + 1):(k - 1)], 0)
+    auxU = c(uSlice[(k - p + 1):(k - 1)], 0)
+    fr_input = genRegMatrix(model, auxY, auxU)$P
+    ySlice[k] = keras::predict_on_batch(model$mdl, x = t(fr_input))
+    uSlice[k] = u[k]
+  }
 
   return(ySlice[p:N])
 }

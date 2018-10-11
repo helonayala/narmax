@@ -1,14 +1,10 @@
 library(narmax)
 library(tidyverse)
 
-# load data from the bouc wen benchmark
-load("../data/boucwen.RData")
+set.seed(0)
 
-# select multisine data for estimation
-ue = umultisine
-ye = ymultisine
-uv = usinesweep
-yv = ysinesweep
+# load data from the bouc wen benchmark
+load("narendra.RData")
 
 ne = length(ue) # amount of data - estimation
 nv = length(uv) # amount of data - validation
@@ -18,127 +14,117 @@ oy = 1:3
 ou = 1:2
 
 # model parameters
-lr = 1e-3 # learning rate
-nrn = c(6,6,6)
-acf = "tanh"
-mdl = ann(oy,ou,nrn,acf) # create model variable
+nrn = c(12)
+#acf = "tanh"
+acf = "sigmoid"
+#mdl = ann(oy,ou,nrn,acf) # create model variable
+mdl = narmax(3,2,2,2)
 
 # normalize data
-ye1 = scale(ye, center = mean(ye), scale = sd(ye))
-ue1 = scale(ue, center = mean(ue), scale = sd(ue))
-uxcorr = ue1[mdl$p:ne]  # u for corr tests
+# ye1 = ye
+# ue1 = ue
+# yv1 = yv
+# uv1 = uv
+y = scale(c(ye,yv))
+u = scale(c(ue,uv))
+ye1 = y[1:800]
+yv1 = y[801:1600]
+ue1 = u[1:800]
+uv1 = u[801:1600]
+uxcorr = ue1[mdl$maxLag:ne]  # u for corr tests
 
 # estimate model parameters
-mdl = estimate(mdl,ye1,ue1,lr)
+#mdl = estimate(mdl,ye1,ue1,lr = 1e-3, epochs = 100, batch_size = 32, verbose = 1)
+mdl = estimate(mdl,ye1,ue1)
 
-# Train it on the entirety of the data.
-model %>% fit(train_data, train_targets,
-              epochs = 100, batch_size = 16, verbose = 1)
+# PREDICITONS - estimation phase
+yhe_1 = predict(mdl,ye1,ue1,K = 1) # one-step-ahead
+yhe_0 = predict(mdl,ye1,ue1,K = 0) # free-run
+
+ehe_1 = ye1[mdl$maxLag:ne] - yhe_1
+ehe_0 = ye1[mdl$maxLag:ne] - yhe_0
+
+R2e_1 = calcR2(ye1[mdl$maxLag:ne],yhe_1)
+R2e_0 = calcR2(ye1[mdl$maxLag:ne],yhe_0)
+
+# PREDICITONS - validation phase
+yhv_1 = predict(mdl,yv1,uv1,K = 1) # one-step-ahead
+yhv_0 = predict(mdl,yv1,uv1,K = 0) # free-run
+
+ehv_1 = yv1[mdl$maxLag:ne] - yhv_1
+ehv_0 = yv1[mdl$maxLag:ne] - yhv_0
+
+R2v_1 = calcR2(yv1[mdl$maxLag:ne],yhv_1)
+R2v_0 = calcR2(yv1[mdl$maxLag:ne],yhv_0)
+
+print(paste("R2 est (OSA & FR): ", R2e_1,R2e_0))
+print(paste("R2 val (OSA & FR): ", R2v_1,R2v_0))
+
+# correlation checks
+g = xcorrel(ehe_1, uxcorr)
+print(g)
+
+df_e = tibble(time = mdl$maxLag:ne,Y=ye1[mdl$maxLag:ne],Yp = yhe_1,Ys = yhe_0,Ep = ehe_1,Es = ehe_0) %>% gather(variable, measurement, -time)
+df_v = tibble(time = mdl$maxLag:nv,Y=yv1[mdl$maxLag:ne],Yp = yhv_1,Ys = yhv_0,Ep = ehv_1,Es = ehv_0) %>% gather(variable, measurement, -time)
+
+# predictions
+p1e = ggplot(filter(df_e, variable %in% c("Y","Ys"))) +
+  geom_line(aes(x = time,y = measurement,color=variable)) +
+  labs(title = "Free-run simulation\n", x = "Sample", y = "Output", color = "\n") +
+  scale_color_manual(labels = c("Measurement", "Prediction"), values = c("black", "blue")) +
+  theme(legend.position="bottom")
+
+p2e = ggplot(filter(df_e, variable %in% c("Y","Yp"))) +
+  geom_line(aes(x = time,y = measurement,color=variable)) +
+  labs(title = "One-step-ahead prediction\n", x = "Sample", y = "Output", color = "\n") +
+  scale_color_manual(labels = c("Measurement", "Prediction"), values = c("black", "blue")) +
+  theme(legend.position="none")
+
+# residuals
+p3e = ggplot(filter(df_e, variable %in% c("Es"))) +
+  geom_line(aes(x = time,y = measurement)) +
+  labs(title = "Free-run simulation error\n", x = "Sample", y = "Error")
+
+p4e = ggplot(filter(df_e, variable %in% c("Ep"))) +
+  geom_line(aes(x = time,y = measurement)) +
+  labs(title = "One-step-ahead error\n", x = "Sample", y = "Error")
+
+# predictions
+p1v = ggplot(filter(df_v, variable %in% c("Y","Ys"))) +
+  geom_line(aes(x = time,y = measurement,color=variable)) +
+  labs(title = "Free-run simulation\n", x = "Sample", y = "Output", color = "\n") +
+  scale_color_manual(labels = c("Measurement", "Prediction"), values = c("black", "blue")) +
+  theme(legend.position="bottom")
+
+p2v = ggplot(filter(df_v, variable %in% c("Y","Yp"))) +
+  geom_line(aes(x = time,y = measurement,color=variable)) +
+  labs(title = "One-step-ahead prediction\n", x = "Sample", y = "Output", color = "\n") +
+  scale_color_manual(labels = c("Measurement", "Prediction"), values = c("black", "blue")) +
+  theme(legend.position="none")
+
+# residuals
+p3v = ggplot(filter(df_v, variable %in% c("Es"))) +
+  geom_line(aes(x = time,y = measurement)) +
+  labs(title = "Free-run simulation error\n", x = "Sample", y = "Error")
+
+p4v = ggplot(filter(df_v, variable %in% c("Ep"))) +
+  geom_line(aes(x = time,y = measurement)) +
+  labs(title = "One-step-ahead error\n", x = "Sample", y = "Error")
+
+xc = xcorrel(ehe_1,uxcorr)
+
+# input-output data
+df = data.frame(time=1:ne,ye1,ue1,yv1,uv1) %>% gather(variable, measurement, -time)
+
+g = ggplot(df) + geom_line(aes(x=time,y = measurement)) + facet_grid(variable ~.)
+
+# print all
+print(xc)
+multiplot(p1e,p2e)
+multiplot(p3e,p4e)
+multiplot(p1v,p2v)
+multiplot(p3v,p4v)
+print(g)
 
 
-
-
-
-
-
-
-
-
-
-build_model <- function(lr) {
-  model <- keras_model_sequential() %>%
-    layer_dense(units = 8, activation = "tanh",
-                input_shape = dim(train_data)[[2]]) %>%
-    layer_dense(units = 8, activation = "tanh") %>%
-    layer_dense(units = 8, activation = "tanh") %>%
-    # layer_dense(units = 8, activation = "tanh") %>%
-    # layer_dense(units = 8, activation = "tanh") %>%
-    # layer_dense(units = 20, activation = "tanh") %>%
-    # layer_dense(units = 20, activation = "tanh") %>%
-    # layer_dense(units = 20, activation = "tanh") %>%
-    layer_dense(units = 1)
-  # layer_dense(units = 8, activation = "tanh",
-  #             input_shape = dim(train_data)[[2]]) %>%
-  #   layer_dense(units = 8, activation = "tanh") %>%
-  #   layer_dense(units = 8, activation = "tanh") %>%
-  #   layer_dense(units = 8, activation = "tanh") %>%
-  #   layer_dense(units = 1)
-
-  model %>% compile(
-    #optimizer = optimizer_rmsprop(lr=lr),
-    optimizer = optimizer_adam(lr=lr,amsgrad = TRUE,clipnorm=50),
-    loss = "mse",
-    metrics = c("mae")
-  )
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# result <- model %>% evaluate(test_data, test_targets) # pq deu pau?
-
-# PREDICTIONS -------
-# OSA
-yh       = predict_on_batch(model, x = all_data)
-yh_train = predict_on_batch(model, x = train_data)
-yh_test  = predict_on_batch(model, x = test_data)
-
-R2   = calcR2(all_targets,yh[,])
-R2tr = calcR2(train_targets,yh_train[,])
-R2te = calcR2(test_targets,yh_test[,])
-
-# FREE RUN
-yh_fr       = predictFreeRun(u,y,ny,nu,model)
-yh_train_fr = predictFreeRun(utr,ytr,ny,nu,model)
-yh_test_fr  = predictFreeRun(ute,yte,ny,nu,model)
-
-R2_fr   = calc_R2(all_targets,yh_fr)
-R2tr_fr = calc_R2(train_targets,yh_train_fr)
-R2te_fr = calc_R2(test_targets,yh_test_fr)
-
-print(paste("R2",R2,"R2tr",R2tr,"R2te",R2te))
-print(paste("R2_fr",R2_fr,"R2tr_fr",R2tr_fr,"R2te_fr",R2te_fr))
-# PLOTS
-
-plot_xcorrel(train_targets - yh_train[,], uxcorr)
-
-ndata = length(all_targets)
-
-df = data.frame(
-  t = rep(1:ndata,3),
-  y = c(all_targets,yh_fr,yh[,]),
-  Type = c(rep('Measured data',ndata),
-           rep('Free-run simulation',ndata),
-           rep('One step ahead',ndata))
-)
-
-ggplot(df,aes(x=t,y=y,color=Type)) + geom_line() +xlab('Sample')+ylab('Output (normalized)')
-
-# grafico de Y vs Yh
-df = data.frame(
-  y = all_targets,
-  yh_fr = yh_fr,
-  yh = yh[,]
-)
-
-p1 = ggplot(df,aes(x=y,y=yh)) + geom_point() +
-  geom_abline(intercept = 0, slope = 1, color="blue", size=1.5)+
-  xlab('Measured')+ylab('Predicted (one-step-ahead)')+ggtitle(paste("R2 =",R2))
-p2 = ggplot(df,aes(x=y,y=yh_fr)) + geom_point() +
-  geom_abline(intercept = 0, slope = 1, color="blue", size=1.5)+
-  xlab('Measured')+ylab('Predicted (free-run)')+ggtitle(paste("R2 =",R2_fr))
-multiplot(p1, p2, cols = 2)
 

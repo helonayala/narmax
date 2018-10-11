@@ -96,21 +96,22 @@ ann = function (oy, ou, nrn, afc) {
   hdnl = length(nrn) # number of hidden layers
   ninp = length(oy)+length(ou) # number of model inputs
 
-  mdl = layer_dense(keras_model_sequential() ,units = nrn[1], activation = afc,
-                      input_shape = ninp)
+  mdl = keras::layer_dense(keras::keras_model_sequential() ,units = nrn[1], activation = afc,
+                      input_shape = ninp, name = "hidden_layer_1")
 
   if (hdnl > 1){
     for (i in 2:hdnl){
-      mdl =  layer_dense(mdl, units = nrn[i], activation = afc)
+      name = paste0("hidden_layer_",i)
+      mdl =  keras::layer_dense(mdl, units = nrn[i], activation = afc, name)
     }
   }
 
-  mdl = layer_dense(mdl,units = 1) # 1-output layer
+  mdl = keras::layer_dense(mdl,units = 1, name = "output_layer") # 1-output layer
 
   model = list(
     oy = oy,
     ou = ou,
-    p  = max(oy, ou) + 1,
+    maxLag = max(oy, ou) + 1,
     nrn = nrn,
     afc = afc,
     mdl = mdl,

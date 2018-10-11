@@ -81,7 +81,7 @@ multiplot(p3,p4)
 
 g = xcorrel(Ep,Up)
 
-multiplot(g$g1,g$g2,g$g3,g$g4,g$g5)
+multiplot(g)
 
 
 
