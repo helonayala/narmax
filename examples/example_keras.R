@@ -9,22 +9,7 @@ load("narendra.RData")
 ne = length(ue) # amount of data - estimation
 nv = length(uv) # amount of data - validation
 
-# select model orders
-oy = 1:3
-ou = 1:2
-
-# model parameters
-nrn = c(12)
-#acf = "tanh"
-acf = "sigmoid"
-#mdl = ann(oy,ou,nrn,acf) # create model variable
-mdl = narmax(3,2,2,2)
-
-# normalize data
-# ye1 = ye
-# ue1 = ue
-# yv1 = yv
-# uv1 = uv
+# normalize data: mean = 0, sd = 1
 y = scale(c(ye,yv))
 u = scale(c(ue,uv))
 ye1 = y[1:800]
@@ -33,9 +18,21 @@ ue1 = u[1:800]
 uv1 = u[801:1600]
 uxcorr = ue1[mdl$maxLag:ne]  # u for corr tests
 
+# select model orders
+oy = 1:3
+ou = 1:2
+
+# model parameters
+nrn = c(128,128,128,128)
+#acf = "tanh"
+acf = "sigmoid"
+mdl = ann(oy,ou,nrn,acf) # create model variable
+#mdl = narx(3,2,2)
+
+
 # estimate model parameters
-#mdl = estimate(mdl,ye1,ue1,lr = 1e-3, epochs = 100, batch_size = 32, verbose = 1)
-mdl = estimate(mdl,ye1,ue1)
+mdl = estimate(mdl,ye1,ue1,lr = 1e-4, epochs = 200, batch_size = 128, verbose = 1)
+#mdl = estimate(mdl,ye1,ue1,rho = 1e-3)
 
 # PREDICITONS - estimation phase
 yhe_1 = predict(mdl,ye1,ue1,K = 1) # one-step-ahead
@@ -59,10 +56,6 @@ R2v_0 = calcR2(yv1[mdl$maxLag:ne],yhv_0)
 
 print(paste("R2 est (OSA & FR): ", R2e_1,R2e_0))
 print(paste("R2 val (OSA & FR): ", R2v_1,R2v_0))
-
-# correlation checks
-g = xcorrel(ehe_1, uxcorr)
-print(g)
 
 df_e = tibble(time = mdl$maxLag:ne,Y=ye1[mdl$maxLag:ne],Yp = yhe_1,Ys = yhe_0,Ep = ehe_1,Es = ehe_0) %>% gather(variable, measurement, -time)
 df_v = tibble(time = mdl$maxLag:nv,Y=yv1[mdl$maxLag:ne],Yp = yhv_1,Ys = yhv_0,Ep = ehv_1,Es = ehv_0) %>% gather(variable, measurement, -time)
