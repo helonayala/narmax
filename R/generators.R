@@ -282,8 +282,6 @@ genRegMatrix.narmax = function (model, Y, U, E = NULL) {
 genRegMatrix.ann = function (model, Y, U, E = NULL) {
   oy = model$oy
   ou = model$ou
-  p = model$p
-  N = length(Y)
 
   ny = max(oy)
   nu = max(ou)
