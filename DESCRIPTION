@@ -17,7 +17,7 @@ Imports:
     latex2exp,
     tidyverse,
     keras,
-    svMisc
+    progress
 RoxygenNote: 6.1.0
 Encoding: UTF-8
 Suggests: 

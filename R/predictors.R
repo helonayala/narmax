@@ -84,8 +84,10 @@ oneStepAhead = function (model, y, u, ...) {
 
     N = length(y)
 
+    pb = progress::progress_bar$new(total = N-p+1)
     for (k in p:N) {
-      svMisc::progress(k/N*100, progress.bar = TRUE)
+      # svMisc::progress(k/N*100, progress.bar = TRUE)
+      pb$tick()
 
       auxY = c(y     [(k - p + 1):(k - 1)], 0)
       auxU = c(u     [(k - p + 1):(k - 1)], 0)
@@ -110,8 +112,10 @@ freeRun = function (model, y, u, K, ...) {
 
   N = length(y)
 
+  pb = progress::progress_bar$new(total = N-p+1)
   for (k in p:N) {
-    svMisc::progress(k/N*100, progress.bar = TRUE)
+    # svMisc::progress(k/N*100, progress.bar = TRUE)
+    pb$tick()
 
     auxY = c(ySlice[(k - p + 1):(k - 1)], 0)
     auxU = c(uSlice[(k - p + 1):(k - 1)], 0)
@@ -147,8 +151,10 @@ freeRun.ann = function (model, y, u, K, ...) {
 
   N = length(y)
 
+  pb = progress::progress_bar$new(total = N-p+1)
   for (k in p:N) {
-    svMisc::progress(k/N*100, progress.bar = TRUE)
+    # svMisc::progress(k/N*100, progress.bar = TRUE)
+    pb$tick()
 
     auxY = c(ySlice[(k - p + 1):(k - 1)], 0)
     auxU = c(uSlice[(k - p + 1):(k - 1)], 0)
