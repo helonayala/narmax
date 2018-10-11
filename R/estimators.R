@@ -84,8 +84,17 @@ estimate.armax = function (model, Y, U, niter = 10) {
 
 #' @title Estimate NARX model
 #' @export
-estimate.narx = function (model, ...) {
-  estimateNotImplemented(model)
+estimate.narx = function (model, Y, U, rho = 1e-2) {
+
+  P = genRegMatrix(model, Y, U)$P
+  Target = genTarget(model, Y)
+
+  resultNarx = frols(P, Target, rho)
+
+  model$terms = colnames(resultNarx$Psel)
+  model$coefficients = resultNarx$th
+
+  return(model)
 }
 
 #' @title Estimate NARMAX model
