@@ -18,7 +18,7 @@ Imports:
     tidyverse,
     keras,
     progress
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.0.9000
 Encoding: UTF-8
 Suggests: 
     knitr,

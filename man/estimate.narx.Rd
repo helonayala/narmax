@@ -4,7 +4,7 @@
 \alias{estimate.narx}
 \title{Estimate NARX model}
 \usage{
-\method{estimate}{narx}(model, ...)
+\method{estimate}{narx}(model, Y, U, rho = 0.01)
 }
 \description{
 Estimate NARX model
