@@ -6,6 +6,10 @@ output: rmarkdown::github_document
 #output: rmarkdown::html_vignette
 ---
 
+In order to compile this example, please run
+
+> rmarkdown::render("vignettes/ann.Rmd")
+
 Load libraries 
 
 ```{r}
