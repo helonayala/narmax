@@ -162,7 +162,6 @@ genRegMatrix.narx = function (model, Y, U, E = NULL) {
   P0 = genRegMatrix(arx(ny, nu), Y, U, E)$P
   P0[, 1:ny] = -P0[, 1:ny]
   colnames(P0) = c(paste0("y(k-", 1:ny, ")"), paste0("u(k-", 1:nu, ")"))
-  print('I AM HERE')
 
   NP0 = nrow(P0)
   obj$P = NULL
