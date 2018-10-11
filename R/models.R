@@ -81,3 +81,42 @@ narmax = function (ny, nu, ne, nl) {
   class(model) = 'narmax'
   return(model)
 }
+
+#' @title ANN Model
+#' @description Creates a NARX artificial neural network nonlinear
+#' model (with autogressive and exogenous inputs)
+#' @param oy Vector with the lags in the autoregressive terms
+#' @param ou Vector with the lags in the exogenous terms
+#' @param nrn a vector (with dimension = number of hidden layers) with the number of neurons in each hidden layers
+#' @param afc activation functions of the neurons (see ? layer_dense)
+#' @return Object representing the ANN-NARX model
+#' @export
+ann = function (oy, ou, nrn, afc) {
+
+  hdnl = length(nrn) # number of hidden layers
+  ninp = length(oy)+length(ou) # number of model inputs
+
+  mdl = layer_dense(keras_model_sequential() ,units = nrn[1], activation = afc,
+                      input_shape = ninp)
+
+  if (hdnl > 1){
+    for (i in 2:hdnl){
+      mdl =  layer_dense(mdl, units = nrn[i], activation = afc)
+    }
+  }
+
+  mdl = layer_dense(mdl,units = 1) # 1-output layer
+
+  model = list(
+    oy = oy,
+    ou = ou,
+    p  = max(oy, ou) + 1,
+    nrn = nrn,
+    afc = afc,
+    mdl = mdl,
+    call = match.call()
+  )
+  class(model) = 'ann'
+  return(model)
+}
+
