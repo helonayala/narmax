@@ -71,34 +71,32 @@ oneStepAhead = function (model, y, u, ...) {
   p = model$maxLag
   N = length(y)
 
-  P = genRegMatrix(model, y, u, e)$P
-  yp = P %*% theta
 
   # If e[k] does not exist on model, return the prediction
   if (!any(grepl('e(', model$terms, fixed = TRUE))) {
-    return(yp)
-  }
-
-  e = c(rep(0, p - 1), y[p:N] - yp[,])
-  eLast = e
-  errDiff = 100
-
-  # maxIterations = model$maxLag* 100
-  maxIterations = 10
-  iterations = 1
-  while (maxIterations >= iterations && errDiff > 1e-8) {
     P = genRegMatrix(model, y, u, e)$P
     yp = P %*% theta
-    e = c(rep(0, p - 1), y[p:N] - yp[,])
-    errDiff = sum(abs((e - eLast)))
-    eLast = e
-    iterations = iterations + 1
-    print(iterations)
-    if ( iterations == 15){
-      a=2
+    return(yp[,])
+  }
+  else {
+    ySlice = y[1:(p-1)]
+    eSlice = rep(0,p-1)
+
+    N = length(y)
+
+    for (k in p:N) {
+      svMisc::progress(k/N*100, progress.bar = TRUE)
+
+      auxY = c(y     [(k - p + 1):(k - 1)], 0)
+      auxU = c(u     [(k - p + 1):(k - 1)], 0)
+      auxE = c(eSlice[(k - p + 1):(k - 1)], 0)
+      phiK = genRegMatrix(model, auxY, auxU, auxE)$P
+      ySlice[k] = (phiK %*% theta)[1]
+      eSlice[k] = y[k] - ySlice[k]
     }
   }
-  return(yp[,])
+
+  return(ySlice[p:N])
 }
 
 freeRun = function (model, y, u, K, ...) {
