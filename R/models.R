@@ -101,8 +101,7 @@ ann = function (oy, ou, nrn, afc) {
 
   if (hdnl > 1){
     for (i in 2:hdnl){
-      name = paste0("hidden_layer_",i)
-      mdl =  keras::layer_dense(mdl, units = nrn[i], activation = afc, name)
+      mdl =  keras::layer_dense(mdl, units = nrn[i], activation = afc, name = paste0("hidden_layer_",i))
     }
   }
 
