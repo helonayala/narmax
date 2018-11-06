@@ -51,3 +51,24 @@ print.narx = function (model) baseRepr(model)
 #' @param model NARMAX model
 #' @export
 print.narmax = function (model) baseRepr(model)
+
+#' @title ANN-NARX model printer
+#' @description Print basic info from ANN-NARX model
+#' @param model ann model
+#' @export
+print.ann = function(model){
+  print(model$mdl)
+}
+
+#' @title caret-NARX model printer
+#' @description Print basic info from caret-NARX model
+#' @param model caret model
+#' @export
+print.caret = function(model){
+  print(model$mdl)
+}
+
+
+
+
+

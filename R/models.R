@@ -120,3 +120,39 @@ ann = function (oy, ou, nrn, afc) {
   return(model)
 }
 
+
+#' @title caret-based Model
+#' @description Creates a NARX-caret based model
+#' @param oy Vector with the lags in the autoregressive terms
+#' @param ou Vector with the lags in the exogenous terms
+#' @param method model type (see https://topepo.github.io/caret/available-models.html)
+#' @return Object representing the caret-based model
+#' @export
+caret = function (oy, ou, method) {
+
+  out <- tryCatch(
+    {
+      caret::modelLookup(method)
+    },
+    error=function(cond) {
+      message("Model not created.")
+      message(cond)
+      return(NULL)
+    }
+  )
+
+  model = list(
+    oy = oy,
+    ou = ou,
+    maxLag = max(oy, ou) + 1,
+    method = method,
+    mdl = NULL,
+    call = match.call()
+  )
+  class(model) = 'caret'
+  return(model)
+}
+
+
+
+

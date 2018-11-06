@@ -302,8 +302,21 @@ genRegMatrix.ann = function (model, Y, U, E = NULL) {
   return(obj)
 }
 
-
-
+#' @title Generates a regression matrix
+#' @description Generates a regression matrix for a caret-based Model
+#' @param model any caret created model
+#' @param Y The output data vector
+#' @param U The input data vector
+#' @return Object containing:
+#' \describe{
+#'  \item{P}{Regression matrix with all terms}
+#'  \item{Pp}{Regression matrix with only process terms}
+#'  \item{Pnp}{Regression matrix without process terms}
+#' }
+#' @export
+genRegMatrix.caret = function (model, Y, U, E = NULL) {
+  return(genRegMatrix.ann(model,Y,U)) # the regression matrix is the same as in ANNs
+}
 
 #' @export
 genTarget = function (model, ...) UseMethod('genTarget')

@@ -175,3 +175,37 @@ estimate.ann = function (model, Y, U, lr = 1e-3, epochs = 100, batch_size = 32, 
   return(model)
 }
 
+#' @title Estimate caret-NARX model
+#' @export
+estimate.caret = function (model, Y, U, trControl = NULL,grid = NULL) {
+
+  if (is.null(trControl)){
+    trControl <- caret::trainControl(
+      ## 10-fold CV
+      method = "repeatedcv",
+      number = 10,
+      ## repeated ten times
+      repeats = 10)
+  }
+
+  phi = data.frame(genRegMatrix(model,Y,U)$P)
+  Y   = genTarget(model,Y)
+
+  if (is.null(grid)){
+    model$mdl = caret::train(phi,Y[,1],
+                             method = model$method,
+                             trControl = trControl,
+                             verbose = TRUE,
+                             tuneLength = 5)
+  } else {
+    model$mdl = caret::train(phi,Y[,1],
+              method = model$method,
+              trControl = trControl,
+              tuneGrid = grid,
+              tuneLength = 5,
+              verbose = TRUE)
+  }
+
+  return(model)
+}
+
