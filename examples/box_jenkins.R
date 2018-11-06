@@ -59,12 +59,12 @@ u_val = u[-ind_est]
 
 # Step 1: Define de model
 # SVMPOLY
-# ny = 1:3
-# nu = 1:2
-# mdl = caret(ny,nu,method = "svmPoly")
-# trnCtrl = trainControl(number = 1,
-#                        verboseIter = TRUE)
-# mdl = estimate(mdl,y_est,u_est,trnCtrl)
+ny = 1:3
+nu = 1:2
+mdl = caret(ny,nu,method = "svmPoly")
+trnCtrl = trainControl(number = 1,
+                       verboseIter = TRUE)
+mdl = estimate(mdl,y_est,u_est,trnCtrl)
 
 # SVMRADIAL
 # ny = 1:3
@@ -84,16 +84,16 @@ u_val = u[-ind_est]
 # mdl = estimate(mdl,y_est,u_est,trControl = trnCtrl)
 
 # GBM
-ny = 1:3
-nu = 1:2
-mdl = caret(ny,nu,method = "gbm")
-trnCtrl <- trainControl(number = 20,
-                        verboseIter = TRUE)
-gbmGrid = expand.grid(interaction.depth = (1:5) * 2,
-                       n.trees = (1:10)*25,
-                       shrinkage = .1,
-                       n.minobsinnode = 10)
-gbmFit = estimate(mdl,y_est,u_est,trControl = trnCtrl,grid = gbmGrid)
+# ny = 1:3
+# nu = 1:2
+# mdl = caret(ny,nu,method = "gbm")
+# trnCtrl <- trainControl(number = 20,
+#                         verboseIter = TRUE)
+# gbmGrid = expand.grid(interaction.depth = (1:5) * 2,
+#                        n.trees = (1:10)*25,
+#                        shrinkage = .1,
+#                        n.minobsinnode = 10)
+# gbmFit = estimate(mdl,y_est,u_est,trControl = trnCtrl,grid = gbmGrid)
 
 print(mdl)
 
