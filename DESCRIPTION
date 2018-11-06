@@ -2,7 +2,7 @@ Package: narmax
 Title: NARMAX: Nonlinear System Identification
 Version: 0.1
 Authors@R: c(
-  person("Helon Ayala Hultmann", "Ayala", email = "helonayala@gmail.com", role = c("cre", "aut")),
+  person("Helon Ayala Hultmann", "Ayala", email = "helon@puc-rio.br", role = c("cre", "aut")),
   person("Marcos Cesar", "Gritti", email = "cesargritti@gmail.com", role = c("aut")),
   person("Leandro dos Santos", "Coelho", email = "lscoelho2009@gmail.com", role = c("aut")))
 Description: Package description
@@ -17,7 +17,8 @@ Imports:
     latex2exp,
     tidyverse,
     keras,
-    progress
+    progress,
+    caret
 RoxygenNote: 6.1.0.9000
 Encoding: UTF-8
 Suggests: 
