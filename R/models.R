@@ -120,3 +120,38 @@ ann = function (oy, ou, nrn, afc) {
   return(model)
 }
 
+
+#' @title ANN-ts Model
+#' @description Creates a ANN-ts nonlinear model (with autogressive inputs)
+#' @param oy Vector with the lags in the autoregressive terms
+#' @param nrn a vector (with dimension = number of hidden layers) with the number of neurons in each hidden layers
+#' @param afc activation functions of the neurons (see ? layer_dense)
+#' @return Object representing the ANN-ts model
+#' @export
+annts = function (oy, nrn, afc) {
+
+  hdnl = length(nrn) # number of hidden layers
+  ninp = length(oy)  # number of model inputs
+
+  mdl = keras::layer_dense(keras::keras_model_sequential() ,units = nrn[1], activation = afc,
+                           input_shape = ninp, name = "hidden_layer_1")
+
+  if (hdnl > 1){
+    for (i in 2:hdnl){
+      mdl =  keras::layer_dense(mdl, units = nrn[i], activation = afc, name = paste0("hidden_layer_",i))
+    }
+  }
+
+  mdl = keras::layer_dense(mdl,units = 1, name = "output_layer") # 1-output layer
+
+  model = list(
+    oy = oy,
+    maxLag = max(oy) + 1,
+    nrn = nrn,
+    afc = afc,
+    mdl = mdl,
+    call = match.call()
+  )
+  class(model) = 'annts'
+  return(model)
+}

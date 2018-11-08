@@ -42,6 +42,14 @@ predict.ann  = function (model, y, u, K = 1, ...) {
 }
 
 #' @export
+predict.annts  = function (model, y, K = 1, ...) {
+  cat('Running annts prediction ... ')
+  prediction = predict.default.annts(model, y, K)
+  cat('Done\n')
+  return(prediction)
+}
+
+#' @export
 predict.default = function (model, y, u, K, ...) {
   if (K < 0) stop('K must be greater or equal to zero')
   method = switch(
@@ -63,6 +71,18 @@ predict.default.ann = function (model, y, u, K, ...) {
     kStepAhead.ann
   )
   return(method(model, y, u, K))
+}
+
+#' @export
+predict.default.annts = function (model, y, K, ...) {
+  if (K < 0) stop('K must be greater or equal to zero')
+  method = switch(
+    as.character(K),
+    "1" = oneStepAhead.annts,
+    "0" = freeRun.annts,
+    kStepAhead.annts
+  )
+  return(method(model, y, K))
 }
 
 oneStepAhead = function (model, y, u, ...) {
@@ -170,3 +190,79 @@ freeRun.ann = function (model, y, u, K, ...) {
 kStepAhead.ann = function (model, y, u, K) {
   cat('K-steap-ahead is looking into the future!!!')
 }
+
+oneStepAhead.annts = function (model, y, ...) {
+
+  p = model$maxLag
+  N = length(y)
+
+  osa_inp = genRegMatrix(model,y)
+
+  yh = keras::predict_on_batch(model$mdl, x = osa_inp)[,]
+
+  time = p:N
+  e = y[p:N] - yh
+  y = y[p:N]
+  yh = tibble(time,y,yh,e)
+
+  return(yh)
+}
+
+freeRun.annts = function (model, y, ...) {
+
+  p = model$maxLag
+
+  ySlice = y[1:(p - 1)]
+
+  N = length(y)
+
+  pb = progress::progress_bar$new(total = N-p+1)
+  for (k in p:N) {
+    pb$tick()
+
+    auxY = c(ySlice[(k - p + 1):(k - 1)], 0)
+    fr_input = genRegMatrix(model, auxY)
+    ySlice[k] = keras::predict_on_batch(model$mdl, x = t(fr_input))
+  }
+
+  time = p:N
+  yh = ySlice[p:N]
+  e = y[p:N] - yh
+  y = y[p:N]
+
+  yh = tibble(time,y,yh,e)
+
+  return(yh)
+}
+
+
+kStepAhead.annts = function (model, y, K) {
+
+  p = model$maxLag
+  N = length(y)
+
+  pb = progress::progress_bar$new(total = N-p-K+2)
+
+  time = (p+K-1):N
+  yh = 0*time
+
+  for (k in p:(N-K+1)) {
+    pb$tick()
+
+    ySlice = y[(k - p + 1):(k - 1)]
+    for (nsteps in 1:K){
+      auxY = c(ySlice[(nsteps):(p+nsteps-2)], 0)
+      nsteps_input = genRegMatrix(model, auxY)
+      ySlice[p + nsteps - 1] = keras::predict_on_batch(model$mdl, x = t(nsteps_input))
+    }
+    yh[k-p+1] = ySlice[p + K - 1]
+  }
+
+  y = y[(p+K-1):N]
+  e = y - yh
+  yh = tibble(time,y,yh,e)
+
+  return(yh)
+}
+
+

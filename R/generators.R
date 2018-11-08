@@ -303,7 +303,41 @@ genRegMatrix.ann = function (model, Y, U, E = NULL) {
 }
 
 
+#' @title Generates a regression matrix
+#' @description Generates a regression matrix for a ANN-ts Model
+#' @param model ANN Model
+#' @param Y The output data vector
+#' @return Regression matrix:
+#' \describe{
+#'  \item{Regression matrix with all terms}: y(t-1), ... contained in model information
+#' }
+#' @export
+genRegMatrix.annts = function (model, Y, U = NULL, E = NULL) {
+  oy = model$oy
 
+  ny = max(oy)
+
+  p = model$maxLag
+  N = length(Y)
+
+  P = matrix(0, nrow = N - p + 1, ncol = ny)
+  colPhi = NULL
+  for(i in 1:ny){
+    P[, i] = Y[(p - i):(N - i)]
+    colPhi = c(colPhi, paste0("y(k-",i,")"))
+  }
+
+  rowPhi = paste0(rep("k=", N - p + 1), p:N)
+
+  colnames(P) = colPhi
+  rownames(P) = rowPhi
+
+  finalReg = paste0("y(k-", oy, ")")
+
+  P = P[,is.element(colnames(P),finalReg)]
+
+  return(P)
+}
 
 #' @export
 genTarget = function (model, ...) UseMethod('genTarget')
@@ -321,3 +355,4 @@ genTarget.default = function (model, Y) {
   colnames(target) = "y(k)"
   return(target)
 }
+
