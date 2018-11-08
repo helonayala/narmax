@@ -4,7 +4,7 @@ library(tidyverse)
 set.seed(0)
 
 # load data from the bouc wen benchmark
-load("narendra.RData")
+load("../data/narendra.RData")
 
 ne = length(ue) # amount of data - estimation
 nv = length(uv) # amount of data - validation
