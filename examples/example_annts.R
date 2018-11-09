@@ -1,21 +1,32 @@
 
+# Clear plots
+if(!is.null(dev.list())) dev.off()
+
 # Clear console
 cat("\014")
 # Clean workspace
 rm(list=ls())
 
 library(narmax)
+library(forecast) # for some data analysis
+set.seed(123)
 
 y  = as.numeric(read.csv("../data/data_chen.csv",header=FALSE)$V1)
-y2 = scale(y)[,]
+y2 = (y - min(y))/(max(y)-min(y))
 n  = length(y2)
 
-mdl = annts(1:13,c(30,30,30),"sigmoid") # order from Chen paper
+ggAcf(y2, lag.max = 50)
+ggAcf(diff(y2), lag.max = 50)
+ts.plot(y2)
 
-mdl = estimate(mdl,y2, lr = 1e-3, epochs = 20, batch_size = 1, verbose = 1)
+gglagplot(y2,lags = 30)
+
+mdl = annts(1:13,c(50),"sigmoid") # order from Chen paper
+
+mdl = estimate(mdl,y2, lr = 1e-4, epochs = 100, batch_size = 32, verbose = 1)
 
 # perform many predictions
-nsteps = 5
+nsteps = 1
 Y = list()
 g = list()
 R2 = rep(0,nsteps)
@@ -29,7 +40,5 @@ for (i in 1:nsteps) {
 
 g
 
-
-
-
+checkresiduals(Y[[1]]$e)
 
