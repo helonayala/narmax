@@ -34,14 +34,6 @@ predict.narmax = function (model, y, u, K = 1, ...) {
 }
 
 #' @export
-predict.ann  = function (model, y, u, K = 1, ...) {
-  cat('Running ann prediction ... ')
-  prediction = predict.default.ann(model, y, u, K)
-  cat('Done\n')
-  return(prediction)
-}
-
-#' @export
 predict.default = function (model, y, u, K, ...) {
   if (K < 0) stop('K must be greater or equal to zero')
   method = switch(
@@ -49,18 +41,6 @@ predict.default = function (model, y, u, K, ...) {
     "1" = oneStepAhead,
     "0" = freeRun,
     kStepAhead
-  )
-  return(method(model, y, u, K))
-}
-
-#' @export
-predict.default.ann = function (model, y, u, K, ...) {
-  if (K < 0) stop('K must be greater or equal to zero')
-  method = switch(
-    as.character(K),
-    "1" = oneStepAhead.ann,
-    "0" = freeRun.ann,
-    kStepAhead.ann
   )
   return(method(model, y, u, K))
 }
@@ -130,43 +110,5 @@ freeRun = function (model, y, u, K, ...) {
 }
 
 kStepAhead = function (model, y, u, K) {
-  cat('K-steap-ahead is looking into the future!!!')
-}
-
-oneStepAhead.ann = function (model, y, u, ...) {
-
-  osa_inp = genRegMatrix(model,y,u)$P
-
-  yh = keras::predict_on_batch(model$mdl, x = osa_inp)
-
-  return(yh[,])
-}
-
-freeRun.ann = function (model, y, u, K, ...) {
-
-  p = model$maxLag
-
-  ySlice = y[1:(p - 1)]
-  uSlice = u[1:(p - 1)]
-
-  N = length(y)
-
-  pb = progress::progress_bar$new(total = N-p+1)
-  for (k in p:N) {
-    # svMisc::progress(k/N*100, progress.bar = TRUE)
-    pb$tick()
-
-    auxY = c(ySlice[(k - p + 1):(k - 1)], 0)
-    auxU = c(uSlice[(k - p + 1):(k - 1)], 0)
-    fr_input = genRegMatrix(model, auxY, auxU)$P
-    ySlice[k] = keras::predict_on_batch(model$mdl, x = t(fr_input))
-    uSlice[k] = u[k]
-  }
-
-  return(ySlice[p:N])
-}
-
-
-kStepAhead.ann = function (model, y, u, K) {
   cat('K-steap-ahead is looking into the future!!!')
 }

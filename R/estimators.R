@@ -156,22 +156,4 @@ estimate.narmax = function (model, Y, U, rho_p = 1e-2, rho_n = 1.9e-6) {
   return(model)
 }
 
-#' @title Estimate ANN-NARX model
-#' @export
-estimate.ann = function (model, Y, U, lr = 1e-3, epochs = 100, batch_size = 32, verbose = 1) {
-
-  model$mdl %>% keras::compile(
-    #optimizer = keras::optimizer_adam(lr=lr,amsgrad = TRUE,clipnorm=50),
-    optimizer = keras::optimizer_rmsprop(lr=lr),
-    loss = "mse",
-    metrics = c("mae")
-  )
-
-  train_data = genRegMatrix(model,Y,U)$P
-  train_targets = genTarget(model, Y)[,]
-
-  model$mdl %>% keras::fit(train_data, train_targets, epochs = epochs, batch_size = batch_size, verbose = verbose)
-
-  return(model)
-}
 
