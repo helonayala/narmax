@@ -1,7 +1,6 @@
 # example from the textbook. Billings, S.A. 2013
-clearWorkspace()
-set.seed(42) # allows reproducibility
 library(narmax)
+clearWorkspace()
 
 # generate simulation data ------------------------------------------------
 N = 400

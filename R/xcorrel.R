@@ -23,13 +23,6 @@ xcorrel = function(e,u,nl) {
   df3 = tidyr::gather(data.frame(lag = -maxlag:maxlag,U2E,U2E2),
                       variable, measurement, -lag,factor_key = TRUE)
 
-  if (class(mdl) %in% c("armax","arx")){
-    nl = 0
-  } else  if (class(mdl) %in% "narmax"){
-    nl = 1
-  } else {
-    nl = 2
-  }
   switch(nl,
     { # 1 linear with X
       df = rbind(df1)

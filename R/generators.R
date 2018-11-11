@@ -184,7 +184,7 @@ genRegMatrix.armax = function (model, Y, U, E) {
   p = model$maxLag
   N = length(Y)
 
-  sizeGuard(Y, U, E)
+  sizeGuard(Y,U, E)
   obj = list()
 
   if (is.null(E)) nc = 0

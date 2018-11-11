@@ -1,7 +1,6 @@
-clearWorkspace()
-set.seed(42) # allows reproducibility
-library(narmax)
 # example from the textbook. Billings, S.A. 2013
+library(narmax)
+clearWorkspace()
 
 # read input/output data --------------------------------------------------
 data = matrix(scan("../data/heating_system.dat"),

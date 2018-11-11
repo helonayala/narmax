@@ -1,11 +1,11 @@
-library(narmax)
 clearWorkspace()
 set.seed(42) # allows reproducibility
+library(narmax)
 
 # define model parameters -------------------------------------------------
-na = 4
-nb = 3
-nc = 2
+# na = 4
+# nb = 3
+# nc = 2
 mdl = armax(na,nb,nc)
 
 # generate input-output data ----------------------------------------------

@@ -18,7 +18,7 @@ predict.armax = function (model, y, u, K = 1, ...) {
 }
 
 #' @export
-predict.nar = function (model, y, u = NULL, K = 1, ...) {
+predict.nar = function (model, y, u, K = 1, ...) {
   cat('Running nar prediction ... \n')
   prediction = predict.default(model, y, u, K)
   cat('Done\n')
@@ -26,7 +26,7 @@ predict.nar = function (model, y, u = NULL, K = 1, ...) {
 }
 
 #' @export
-predict.narma = function (model, y, u = NULL, K = 1, ...) {
+predict.narma = function (model, y, u, K = 1, ...) {
   cat('Running narma prediction ... \n')
   prediction = predict.default(model, y, u, K)
   cat('Done\n')
@@ -61,20 +61,16 @@ predict.default = function (model, y, u, K, ...) {
   return(method(model, y, u, K))
 }
 
-oneStepAhead = function (model, ...) {
+oneStepAhead = function (model, y, u,...) {
   theta = as.matrix(model$coefficients)
   e = rep(0, length(y))
   p = model$maxLag
   N = length(y)
 
   type = "one-step-ahead"
-  if (class(mdl) %in% c("armax","arx")){
-    nl = 0 # linear with X
-  } else  if (class(mdl) %in% "narmax"){
-    nl = 1 # nonlinear wiht x
-  } else {
-    nl = 2 # nonlinear ts
-  }
+  if (class(mdl) %in% c("armax","arx")) nl = 1 # linear with X
+  else if (class(mdl) %in% "narmax")    nl = 2 # nonlinear wiht x
+  else                                  nl = 3 # nonlinear ts
 
   # If e[k] does not exist on model, return the prediction
   if (!any(grepl('e(', model$terms, fixed = TRUE))) {
@@ -95,32 +91,30 @@ oneStepAhead = function (model, ...) {
       auxY = c(y     [(k - p + 1):(k - 1)], 0)
       auxU = c(u     [(k - p + 1):(k - 1)], 0)
       auxE = c(eSlice[(k - p + 1):(k - 1)], 0)
-      if(class(model) == "narma") {
-        phiK = genRegMatrix(model, Y = auxY, E = auxE)$P
-      }else {
-        phiK = genRegMatrix(model, auxY, auxU, auxE)$P
-      }
+      # if(class(model) == "narma") {
+      #   phiK = genRegMatrix(model, Y = auxY, E = auxE)$P
+      # }else {
+      phiK = genRegMatrix(model, auxY, auxU, auxE)$P
+      # }
       ySlice[k] = (phiK %*% theta)[1]
       eSlice[k] = y[k] - ySlice[k]
     }
   }
 
-
-
-  if(class(model) == "narma") {
-    df = data.frame(time = p:N,
-                    y = y[p:N],
-                    yh = ySlice[p:N],
-                    e = y[p:N] - ySlice[p:N])
-    g = NULL
-  }else {
-    df = data.frame(time = p:N,
-                    y = y[p:N],
-                    u = u[p:N],
-                    yh = ySlice[p:N],
-                    e = y[p:N] - ySlice[p:N])
-    g = xcorrel(df$e,df$u,nl)
-  }
+  # if(class(model) == "narma") {
+  #   df = data.frame(time = p:N,
+  #                   y = y[p:N],
+  #                   yh = ySlice[p:N],
+  #                   e = y[p:N] - ySlice[p:N])
+  #   g = NULL
+  # }else {
+  df = data.frame(time = p:N,
+                  y = y[p:N],
+                  u = u[p:N],
+                  yh = ySlice[p:N],
+                  e = y[p:N] - ySlice[p:N])
+  g = xcorrel(df$e,df$u,nl)
+  # }
 
   R2 = calcR2(y[p:N],ySlice[p:N])
 
@@ -162,10 +156,10 @@ freeRun = function (model, y, u, K, ...) {
   }
 
   df = data.frame(time = p:N,
-               y = y[p:N],
-               u = u[p:N],
-               yh = ySlice[p:N],
-               e = y[p:N] - ySlice[p:N])
+                  y = y[p:N],
+                  u = u[p:N],
+                  yh = ySlice[p:N],
+                  e = y[p:N] - ySlice[p:N])
 
   R2 = calcR2(y[p:N],ySlice[p:N])
 
