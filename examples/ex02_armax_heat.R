@@ -20,7 +20,7 @@ uv = u[iv]
 # model parameters
 na = 4
 nb = 4
-nc = 4
+nc = 10
 mdl = armax(na,nb,nc)
 
 # estimate parameters -----------------------------------------------------
@@ -38,6 +38,7 @@ Pv1 = predict(mdl, yv, uv, K = 1) # one-step-ahead
 Pa0 = predict(mdl, y, u, K = 0) # free-run
 Pa1 = predict(mdl, y, u, K = 1) # one-step-ahead
 # print plots -------------------------------------------------------------
-print(Pa0$plote)
-print(Pa0$ploty)
+print(Pa0$plote)   # plot residuals
+print(Pa0$ploty)   # plot predictions vs measured data
+print(Pe1$xcorrel) # validate with correlation-based tests
 

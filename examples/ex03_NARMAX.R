@@ -41,8 +41,7 @@ P1 = predict(mdl, y, u, K = 1)
 # plot predictions/residuals ----------------------------------------------
 print(P0$ploty)
 print(P0$plote)
+print(P1$xcorrel) # validate with correlation-based tests
 
-# validate with correlation-based tests -----------------------------------
-g = xcorrel(P1)
-print(g)
+
 

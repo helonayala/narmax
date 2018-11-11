@@ -46,7 +46,8 @@ Pv0 = predict(mdl, yv, uv, K = 0) # free-run
 Pv1 = predict(mdl, yv, uv, K = 1) # one-step-ahead
 
 # output plots ------------------------------------------------------------
-print(Pv0$plote)
-print(Pv0$ploty)
+print(Pv0$plote)   # plot residuals
+print(Pv0$ploty)   # plot predictions vs measured data
+print(Pe1$xcorrel) # validate with correlation-based tests
 
 
