@@ -185,4 +185,38 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 }
 
 
+#' @title Prepare plots for predict() output
+#'
+#' @description Prepare function calls for output
+#' @export
+cookPlots <- function(df,R2,type) {
+  p1 = ggplot2::ggplot(data = df, ggplot2::aes(x = time)) +
+    ggplot2::geom_line(ggplot2::aes(y = y,colour="Measured")) +
+    ggplot2::geom_line(ggplot2::aes(y = yh,colour="Prediction"),linetype = "dotted") +
+    ggplot2::scale_color_manual(values = c("#000000","#999999")) +
+    ggplot2::scale_size_manual(values=c(1.5, 1,0.5))+
+    ggplot2::labs(color = '') +
+    ggplot2::theme(legend.position="bottom")+
+    ggplot2::theme_bw() +
+    ggplot2::ggtitle(paste0('Predictions in ',type,". R2 = ",sprintf("%0.4f",R2)))+
+    ggplot2::xlab("Time") +
+    ggplot2::ylab("Output")
+
+  p2 = ggplot2::ggplot(data = df, ggplot2::aes(x = time)) +
+    ggplot2::geom_line(ggplot2::aes(y = e)) +
+    ggplot2::scale_color_manual(values = c("#000000")) +
+    ggplot2::theme_bw() +
+    ggplot2::ggtitle(paste0('Error in ',type,". R2 = ",sprintf("%0.4f",R2)))+
+    ggplot2::xlab("Time") +
+    ggplot2::ylab("Error")
+
+  out = list(p1 = p1,
+             p2 = p2)
+
+  return(out)
+}
+
+
+
+
 

@@ -86,22 +86,14 @@ oneStepAhead = function (model, y, u, ...) {
 
   R2 = calcR2(y[p:N],ySlice[p:N])
 
-  p1 = ggplot(data = df, aes(x = time)) +
-    geom_line(aes(y = y,colour="Measured")) +
-    geom_line(aes(y = yh,colour="Prediction"),linetype = "dotted") +
-    # geom_line(aes(y = e,colour="Error"),linetype = "dotted")+
-    scale_color_manual(values = c("#000000","#999999")) +
-    scale_size_manual(values=c(1.5, 1,0.5))+
-    labs(color = '') +
-    theme(legend.position="bottom")+
-    theme_bw() +
-    ggtitle(paste0('Predictions in ',type,". R2 = ",sprintf("%0.4f",R2)))+
-    xlab("Time") + ylab("Output")
+  p = cookPlots(df,R2,type)
 
   out = list(dfpred = df,
              R2 = R2,
-             plot = p1,
+             ploty = p[[1]],
+             plote = p[[2]],
              type = type)
+
   return(out)
 }
 
@@ -138,23 +130,13 @@ freeRun = function (model, y, u, K, ...) {
 
   R2 = calcR2(y[p:N],ySlice[p:N])
 
-  p1 = ggplot(data = df, aes(x = time)) +
-    geom_line(aes(y = y,colour="Measured")) +
-    geom_line(aes(y = yh,colour="Prediction"),linetype = "dotted") +
-    # geom_line(aes(y = e,colour="Error"),linetype = "dotted")+
-    scale_color_manual(values = c("#000000","#999999")) +
-    scale_size_manual(values=c(1.5, 1,0.5))+
-    labs(color = '') +
-    theme(legend.position="bottom")+
-    theme_bw() +
-    ggtitle(paste0('Predictions in ',type,". R2 = ",sprintf("%0.4f",R2)))+
-    xlab("Time") + ylab("Output")
+  p = cookPlots(df,R2,type)
 
   out = list(dfpred = df,
              R2 = R2,
-             plot = p1,
+             ploty = p[[1]],
+             plote = p[[2]],
              type = type)
-
   return(out)
 }
 
