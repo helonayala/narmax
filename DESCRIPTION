@@ -17,9 +17,8 @@ Imports:
     latex2exp,
     tidyverse,
     keras,
-    progress,
-    caret
-RoxygenNote: 6.1.0.9000
+    progress
+RoxygenNote: 6.1.1
 Encoding: UTF-8
 Suggests: 
     knitr,
