@@ -51,6 +51,11 @@ oneStepAhead = function (model, y, u, ...) {
   p = model$maxLag
   N = length(y)
   type = "one-step-ahead"
+  if (class(mdl) %in% c("armax","arx")){
+    nl = 0
+  } else{
+    nl = 1
+  }
 
   # If e[k] does not exist on model, return the prediction
   if (!any(grepl('e(', model$terms, fixed = TRUE))) {
@@ -88,10 +93,13 @@ oneStepAhead = function (model, y, u, ...) {
 
   p = cookPlots(df,R2,type)
 
+  g = xcorrel(df$e,df$u,nl)
+
   out = list(dfpred = df,
              R2 = R2,
              ploty = p[[1]],
              plote = p[[2]],
+             xcorrel = g,
              type = type)
 
   return(out)

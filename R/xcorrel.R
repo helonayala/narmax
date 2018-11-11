@@ -2,10 +2,7 @@
 #'
 #' @description See Billings book, chapter 5
 #' @export
-xcorrel = function(P) {
-
-  e = P$df$e
-  u = P$df$u
+xcorrel = function(e,u,nl) {
 
   maxlag = 25
   N = length(u)
@@ -26,13 +23,18 @@ xcorrel = function(P) {
   df3 = tidyr::gather(data.frame(lag = -maxlag:maxlag,U2E,U2E2),
                       variable, measurement, -lag,factor_key = TRUE)
 
-  df = rbind(df1,df2,df3)
-
-  levels(df$variable) =  c(latex2exp::TeX('$\\phi_{\\xi\\xi}(\\tau)$'),
+  if ( nl == 1) {
+    df = rbind(df1,df2,df3)
+    levels(df$variable) =  c(latex2exp::TeX('$\\phi_{\\xi\\xi}(\\tau)$'),
                            latex2exp::TeX('$\\phi_{u\\xi}(\\tau)$'),
                            latex2exp::TeX('$\\phi_{\\xi(\\xi u)}(\\tau)$'),
                            latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi}(\\tau)$'),
                            latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi^2}(\\tau)$'))
+  } else {
+    df = rbind(df1)
+    levels(df$variable) =  c(latex2exp::TeX('$\\phi_{\\xi\\xi}(\\tau)$'),
+                             latex2exp::TeX('$\\phi_{u\\xi}(\\tau)$'))
+  }
 
   g = ggplot2::ggplot(df) +
     ggplot2::geom_line(ggplot2::aes(x = lag, y = measurement)) + #,color = variable)) +
