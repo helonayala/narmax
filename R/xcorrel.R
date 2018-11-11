@@ -2,7 +2,10 @@
 #'
 #' @description See Billings book, chapter 5
 #' @export
-xcorrel = function(e,u) {
+xcorrel = function(P) {
+
+  e = P$df$e
+  u = P$df$u
 
   maxlag = 25
   N = length(u)
@@ -37,7 +40,8 @@ xcorrel = function(e,u) {
     ggplot2::ylim(-1,1)  +
     ggplot2::ylab("") +
     ggplot2::facet_grid(~variable, scales = "free",labeller = ggplot2::label_parsed) +
-    ggplot2::theme(strip.text.x = ggplot2::element_text(size = 20))
+    #ggplot2::theme(strip.text.x = ggplot2::element_text(size = 20))+
+    ggplot2::theme_bw(base_size = 14)
 
   return(g)
 }
