@@ -50,7 +50,7 @@ oneStepAhead = function (model, y, u, ...) {
   e = rep(0, length(y))
   p = model$maxLag
   N = length(y)
-
+  type = "one-step-ahead"
 
   # If e[k] does not exist on model, return the prediction
   if (!any(grepl('e(', model$terms, fixed = TRUE))) {
@@ -78,13 +78,38 @@ oneStepAhead = function (model, y, u, ...) {
     }
   }
 
-  return(ySlice[p:N])
+  df = data.frame(time = p:N,
+                  y = y[p:N],
+                  u = u[p:N],
+                  yh = ySlice[p:N],
+                  e = y[p:N] - ySlice[p:N])
+
+  R2 = calcR2(y[p:N],ySlice[p:N])
+
+  p1 = ggplot(data = df, aes(x = time)) +
+    geom_line(aes(y = y,colour="Measured")) +
+    geom_line(aes(y = yh,colour="Prediction"),linetype = "dotted") +
+    # geom_line(aes(y = e,colour="Error"),linetype = "dotted")+
+    scale_color_manual(values = c("#000000","#999999")) +
+    scale_size_manual(values=c(1.5, 1,0.5))+
+    labs(color = '') +
+    theme(legend.position="bottom")+
+    theme_bw() +
+    ggtitle(paste0('Predictions in ',type,". R2 = ",sprintf("%0.4f",R2)))+
+    xlab("Time") + ylab("Output")
+
+  out = list(dfpred = df,
+             R2 = R2,
+             plot = p1,
+             type = type)
+  return(out)
 }
 
 freeRun = function (model, y, u, K, ...) {
   theta = as.matrix(model$coefficients)
   p = model$maxLag
   e = rep(0, length(y))
+  type = "free-run"
 
   ySlice = y[1:(p - 1)]
   uSlice = u[1:(p - 1)]
@@ -94,7 +119,6 @@ freeRun = function (model, y, u, K, ...) {
 
   pb = progress::progress_bar$new(total = N-p+1)
   for (k in p:N) {
-    # svMisc::progress(k/N*100, progress.bar = TRUE)
     pb$tick()
 
     auxY = c(ySlice[(k - p + 1):(k - 1)], 0)
@@ -106,7 +130,32 @@ freeRun = function (model, y, u, K, ...) {
     eSlice[k] = 0
   }
 
-  return(ySlice[p:N])
+  df = data.frame(time = p:N,
+               y = y[p:N],
+               u = u[p:N],
+               yh = ySlice[p:N],
+               e = y[p:N] - ySlice[p:N])
+
+  R2 = calcR2(y[p:N],ySlice[p:N])
+
+  p1 = ggplot(data = df, aes(x = time)) +
+    geom_line(aes(y = y,colour="Measured")) +
+    geom_line(aes(y = yh,colour="Prediction"),linetype = "dotted") +
+    # geom_line(aes(y = e,colour="Error"),linetype = "dotted")+
+    scale_color_manual(values = c("#000000","#999999")) +
+    scale_size_manual(values=c(1.5, 1,0.5))+
+    labs(color = '') +
+    theme(legend.position="bottom")+
+    theme_bw() +
+    ggtitle(paste0('Predictions in ',type,". R2 = ",sprintf("%0.4f",R2)))+
+    xlab("Time") + ylab("Output")
+
+  out = list(dfpred = df,
+             R2 = R2,
+             plot = p1,
+             type = type)
+
+  return(out)
 }
 
 kStepAhead = function (model, y, u, K) {
