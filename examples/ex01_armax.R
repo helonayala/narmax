@@ -4,18 +4,19 @@
 
 clearWorkspace()
 
-library(ggplot2)
-# allows reproducibility
-set.seed(42)
-#model parameters
-na = 4
-nb = 3
-nc = 2
+set.seed(42) # allows reproducibility
 
+library(narmax)
+library(ggplot2)
+
+# define model parameters -------------------------------------------------
+# na = 4
+# nb = 3
+# nc = 2
 mdl = armax(na,nb,nc)
 
 # generate input-output data ----------------------------------------------
-sd_noise = 0*1e-2
+sd_noise = 1e-2
 N = 1000 # number of samples
 cutoff = 0.1 # normalized frequency cutoff
 th = c(0.3,0.5,0.1,0.4,0.2,0.32,0.1)
@@ -42,18 +43,15 @@ ye = ye + ee
 yvor = yv
 yv = yv + ev
 
+# estimate model parameters -----------------------------------------------
 mdl = estimate(mdl, ye, ue)
 
-Yp = predict(mdl, ye, ue, K = 1)
-Ys = predict(mdl, ye, ue, K = 0)
+# make model predictions --------------------------------------------------
+Pe0 = predict(mdl, ye, ue, K = 0) # free-run
+Pe1 = predict(mdl, ye, ue, K = 1) # one-step-ahead
+Pv0 = predict(mdl, yv, uv, K = 0) # free-run
+Pv1 = predict(mdl, yv, uv, K = 1) # one-step-ahead
 
-p = mdl$maxLag
-time = 1:length(ye)
-df = data.frame(time = time[p:N], y = ye[p:N], yp = Yp, ys = Ys)
-
-p = ggplot(data = df, aes(x = time)) +
-  geom_line(aes(y = y)) +
-  geom_line(aes(y = yp), color = "red") +
-  geom_line(aes(y = ys), color = "blue")
-
-plot(p)
+# output plots ------------------------------------------------------------
+print(Pe0$plot)
+print(Pe1$plot)
