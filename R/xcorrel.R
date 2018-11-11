@@ -23,18 +23,30 @@ xcorrel = function(e,u,nl) {
   df3 = tidyr::gather(data.frame(lag = -maxlag:maxlag,U2E,U2E2),
                       variable, measurement, -lag,factor_key = TRUE)
 
-  if ( nl == 1) {
-    df = rbind(df1,df2,df3)
-    levels(df$variable) =  c(latex2exp::TeX('$\\phi_{\\xi\\xi}(\\tau)$'),
-                           latex2exp::TeX('$\\phi_{u\\xi}(\\tau)$'),
-                           latex2exp::TeX('$\\phi_{\\xi(\\xi u)}(\\tau)$'),
-                           latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi}(\\tau)$'),
-                           latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi^2}(\\tau)$'))
+  if (class(mdl) %in% c("armax","arx")){
+    nl = 0
+  } else  if (class(mdl) %in% "narmax"){
+    nl = 1
   } else {
-    df = rbind(df1)
-    levels(df$variable) =  c(latex2exp::TeX('$\\phi_{\\xi\\xi}(\\tau)$'),
-                             latex2exp::TeX('$\\phi_{u\\xi}(\\tau)$'))
+    nl = 2
   }
+  switch(nl,
+    { # 1 linear with X
+      df = rbind(df1)
+      levels(df$variable) =  c(latex2exp::TeX('$\\phi_{\\xi\\xi}(\\tau)$'),
+                               latex2exp::TeX('$\\phi_{u\\xi}(\\tau)$'))
+    },
+    { # 2 nonlinear with x
+      df = rbind(df1,df2,df3)
+      levels(df$variable) =  c(latex2exp::TeX('$\\phi_{\\xi\\xi}(\\tau)$'),
+                               latex2exp::TeX('$\\phi_{u\\xi}(\\tau)$'),
+                               latex2exp::TeX('$\\phi_{\\xi(\\xi u)}(\\tau)$'),
+                               latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi}(\\tau)$'),
+                               latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi^2}(\\tau)$'))
+    },
+    { # 3 nonlinear ts
+      df = data.frame() # WIP
+    })
 
   g = ggplot2::ggplot(df) +
     ggplot2::geom_line(ggplot2::aes(x = lag, y = measurement)) + #,color = variable)) +

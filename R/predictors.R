@@ -3,7 +3,7 @@ predict = function (model, ...) UseMethod('predict')
 
 #' @export
 predict.arx = function (model, y, u, K = 1, ...) {
-  cat('Running arx prediction ... ')
+  cat('Running arx prediction ... \n')
   prediction = predict.default(model, y, u, K)
   cat('Done\n')
   return(prediction)
@@ -11,7 +11,23 @@ predict.arx = function (model, y, u, K = 1, ...) {
 
 #' @export
 predict.armax = function (model, y, u, K = 1, ...) {
-  cat('Running armax prediction ... ')
+  cat('Running armax prediction ... \n')
+  prediction = predict.default(model, y, u, K)
+  cat('Done\n')
+  return(prediction)
+}
+
+#' @export
+predict.nar = function (model, y, u = NULL, K = 1, ...) {
+  cat('Running nar prediction ... \n')
+  prediction = predict.default(model, y, u, K)
+  cat('Done\n')
+  return(prediction)
+}
+
+#' @export
+predict.narma = function (model, y, u = NULL, K = 1, ...) {
+  cat('Running narma prediction ... \n')
   prediction = predict.default(model, y, u, K)
   cat('Done\n')
   return(prediction)
@@ -19,7 +35,7 @@ predict.armax = function (model, y, u, K = 1, ...) {
 
 #' @export
 predict.narx = function (model, y, u, K = 1, ...) {
-  cat('Running narx prediction ... ')
+  cat('Running narx prediction ... \n')
   prediction = predict.default(model, y, u, K)
   cat('Done\n')
   return(prediction)
@@ -45,16 +61,19 @@ predict.default = function (model, y, u, K, ...) {
   return(method(model, y, u, K))
 }
 
-oneStepAhead = function (model, y, u, ...) {
+oneStepAhead = function (model, ...) {
   theta = as.matrix(model$coefficients)
   e = rep(0, length(y))
   p = model$maxLag
   N = length(y)
+
   type = "one-step-ahead"
   if (class(mdl) %in% c("armax","arx")){
-    nl = 0
-  } else{
-    nl = 1
+    nl = 0 # linear with X
+  } else  if (class(mdl) %in% "narmax"){
+    nl = 1 # nonlinear wiht x
+  } else {
+    nl = 2 # nonlinear ts
   }
 
   # If e[k] does not exist on model, return the prediction
@@ -71,29 +90,41 @@ oneStepAhead = function (model, y, u, ...) {
 
     pb = progress::progress_bar$new(total = N-p+1)
     for (k in p:N) {
-      # svMisc::progress(k/N*100, progress.bar = TRUE)
       pb$tick()
 
       auxY = c(y     [(k - p + 1):(k - 1)], 0)
       auxU = c(u     [(k - p + 1):(k - 1)], 0)
       auxE = c(eSlice[(k - p + 1):(k - 1)], 0)
-      phiK = genRegMatrix(model, auxY, auxU, auxE)$P
+      if(class(model) == "narma") {
+        phiK = genRegMatrix(model, Y = auxY, E = auxE)$P
+      }else {
+        phiK = genRegMatrix(model, auxY, auxU, auxE)$P
+      }
       ySlice[k] = (phiK %*% theta)[1]
       eSlice[k] = y[k] - ySlice[k]
     }
   }
 
-  df = data.frame(time = p:N,
-                  y = y[p:N],
-                  u = u[p:N],
-                  yh = ySlice[p:N],
-                  e = y[p:N] - ySlice[p:N])
+
+
+  if(class(model) == "narma") {
+    df = data.frame(time = p:N,
+                    y = y[p:N],
+                    yh = ySlice[p:N],
+                    e = y[p:N] - ySlice[p:N])
+    g = NULL
+  }else {
+    df = data.frame(time = p:N,
+                    y = y[p:N],
+                    u = u[p:N],
+                    yh = ySlice[p:N],
+                    e = y[p:N] - ySlice[p:N])
+    g = xcorrel(df$e,df$u,nl)
+  }
 
   R2 = calcR2(y[p:N],ySlice[p:N])
 
   p = cookPlots(df,R2,type)
-
-  g = xcorrel(df$e,df$u,nl)
 
   out = list(dfpred = df,
              R2 = R2,

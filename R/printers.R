@@ -40,6 +40,12 @@ print.ar = function (model) baseRepr(model)
 #' @export
 print.arx = function (model) baseRepr(model)
 
+#' @title ARMA model printer
+#' @description Print basic info from ARMA model
+#' @param model ARMA model
+#' @export
+print.arma = function (model) baseRepr(model)
+
 #' @title ARMAX model printer
 #' @description Print basic info from ARMAX model
 #' @param model ARMAX model

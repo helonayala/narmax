@@ -40,11 +40,11 @@ arx = function (ny, nu) {
 #' @param ne Number of moving average lags
 #' @return Object representing an ARMA model
 #' @export
-armax = function (ny, ne) {
+arma = function (ny, ne) {
   model = list(
     ny = ny,
     ne = ne,
-    maxLag = max(ny, nu, ne) + 1,
+    maxLag = max(ny, ne) + 1,
     terms = NULL,
     coefficients = NULL, # Variable name required by base::
     call = match.call()
@@ -71,6 +71,25 @@ armax = function (ny, nu, ne) {
     call = match.call()
   )
   class(model) = 'armax'
+  return(model)
+}
+
+#' @title NAR Model
+#' @description Creates a nonlinear autoregressive model
+#' @param ny Number of autoregressive lags
+#' @param nl Nonlinearity polinomial length
+#' @return Object representing a NAR model
+#' @export
+nar = function (ny, nl) {
+  model = list(
+    ny = ny,
+    nl = nl,
+    maxLag = max(ny) + 1,
+    terms = NULL,
+    coefficients = NULL,
+    call = match.call()
+  )
+  class(model) = 'nar'
   return(model)
 }
 
@@ -102,7 +121,7 @@ narx = function (ny, nu, nl) {
 #' @param nl Nonlinearity polinomial length
 #' @return Object representing a NARMA model
 #' @export
-narmax = function (ny, ne, nl) {
+narma = function (ny, ne, nl) {
   model = list(
     ny = ny,
     ne = ne,
