@@ -1,13 +1,6 @@
-# armax system identification
-# helon - 4/9/18
-# mec2015 - system identification - puc-rio
-
 clearWorkspace()
-
 set.seed(42) # allows reproducibility
-
 library(narmax)
-library(ggplot2)
 
 # define model parameters -------------------------------------------------
 # na = 4
@@ -53,5 +46,7 @@ Pv0 = predict(mdl, yv, uv, K = 0) # free-run
 Pv1 = predict(mdl, yv, uv, K = 1) # one-step-ahead
 
 # output plots ------------------------------------------------------------
-print(Pe0$plot)
-print(Pe1$plot)
+print(Pv0$plote)
+print(Pv0$ploty)
+
+

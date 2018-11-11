@@ -1,15 +1,9 @@
-# armax system identification
-# helon - 4/9/18
-# mec2015 - system identification - puc-rio
+# example from the textbook. Billings, S.A. 2013
+clearWorkspace()
+set.seed(42) # allows reproducibility
+library(narmax)
 
-library(tidyverse)
-# library(MASS)
-# source("library_sysid.R")
-set.seed(0) # reproducibility
-
-# code begins
-
-# Generate simulation data
+# generate simulation data ------------------------------------------------
 N = 400
 u = rnorm(N, mean = 0, sd=1)
 e = rnorm(N, mean = 0, sd=0.04^2)
@@ -25,7 +19,7 @@ for (k in 3:N) {
 }
 e = rep(0,N)
 
-# Step 1: Define de model
+# define model structure --------------------------------------------------
 rho_p = 1e-2
 rho_n = 1.9e-6
 
@@ -36,52 +30,19 @@ nl = 2
 
 mdl = narmax(ny, nu, ne, nl)
 
-# Step 2: Estimate the model
+# estimate the model ------------------------------------------------------
 mdl = estimate(mdl, y, u, rho_p, rho_n)
 print(mdl)
 
-Ys = predict(mdl, y, u, K = 0)
-Yp = predict(mdl, y, u, K = 1)
+# calculate predictions ---------------------------------------------------
+P0 = predict(mdl, y, u, K = 0)
+P1 = predict(mdl, y, u, K = 1)
 
-p = mdl$maxLag
-time = p:N
-Ep = y[p:N] - Yp
-Es = y[p:N] - Ys
-Up = u[p:N]
+# plot predictions/residuals ----------------------------------------------
+print(P0$ploty)
+print(P0$plote)
 
-df = tibble(time,Y=y[p:N],Yp,Ys,Ep,Es) %>% gather(variable, measurement, -time)
-
-head(df)
-
-# predictions
-p1 = ggplot(filter(df, variable %in% c("Y","Ys"))) +
-  geom_line(aes(x = time,y = measurement,color=variable)) +
-  labs(title = "Free-run simulation\n", x = "Sample", y = "Output", color = "\n") +
-  scale_color_manual(labels = c("Measurement", "Prediction"), values = c("black", "blue")) +
-  theme(legend.position="bottom")
-
-p2 = ggplot(filter(df, variable %in% c("Y","Yp"))) +
-  geom_line(aes(x = time,y = measurement,color=variable)) +
-  labs(title = "One-step-ahead prediction\n", x = "Sample", y = "Output", color = "\n") +
-  scale_color_manual(labels = c("Measurement", "Prediction"), values = c("black", "blue")) +
-  theme(legend.position="none")
-
-multiplot(p1,p2)
-
-# residuals
-p3 = ggplot(filter(df, variable %in% c("Es"))) +
-  geom_line(aes(x = time,y = measurement)) +
-  labs(title = "Free-run simulation error\n", x = "Sample", y = "Error")
-
-p4 = ggplot(filter(df, variable %in% c("Ep"))) +
-  geom_line(aes(x = time,y = measurement)) +
-  labs(title = "One-step-ahead error\n", x = "Sample", y = "Error")
-
-multiplot(p3,p4)
-
-g = xcorrel(Ep,Up)
-
-multiplot(g)
-
-
+# validate with correlation-based tests -----------------------------------
+g = xcorrel(P1)
+print(g)
 

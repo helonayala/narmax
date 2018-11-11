@@ -1,11 +1,7 @@
-# armax system identification
-# helon - 4/9/18
-# mec2015 - system identification - puc-rio
-
 clearWorkspace()
-
+set.seed(42) # allows reproducibility
 library(narmax)
-library(tidyverse)
+# example from the textbook. Billings, S.A. 2013
 
 # read input/output data --------------------------------------------------
 data = matrix(scan("../data/heating_system.dat"),
@@ -42,6 +38,6 @@ Pv1 = predict(mdl, yv, uv, K = 1) # one-step-ahead
 Pa0 = predict(mdl, y, u, K = 0) # free-run
 Pa1 = predict(mdl, y, u, K = 1) # one-step-ahead
 # print plots -------------------------------------------------------------
-print(Pa0$plot)
-print(Pa1$plot)
+print(Pa0$plote)
+print(Pa0$ploty)
 
