@@ -42,14 +42,15 @@ estimate.armax = function (model, Y, U, niter = 10) {
   modelARX = arx(ny,nu)
 
   Phie = genRegMatrix(modelARX,Y,U)$P
-  Ye   = genTarget(modelARX,Y)
+  YeARX   = genTarget(modelARX,Y)
+  YeARMAX = genTarget(model,Y)
 
   # estimate parameters -----------------------------------------------------
   Th_ARMAX_hat = matrix(0,ny+nu+ne,niter)
-  th_ARX_hat = MASS::ginv(Phie) %*% Ye
+  th_ARX_hat = MASS::ginv(Phie) %*% YeARX
   th_ARX_hat0 = th_ARX_hat
   th_ARMAX_hat0 = c(th_ARX_hat0,rep(0,ne))
-  ee_s1 = c(rep(0,p-1),Ye - (Phie %*% th_ARX_hat))
+  ee_s1 = c(rep(0,modelARX$maxLag-1),YeARX - (Phie %*% th_ARX_hat))
   dlt1 = rep(0,niter)
   dlt2 = rep(0,niter)
 
@@ -57,7 +58,7 @@ estimate.armax = function (model, Y, U, niter = 10) {
 
     Phie_ext = genRegMatrix(model,Y,U,ee_s1)$P
 
-    th_ARMAX_hat = MASS::ginv(Phie_ext) %*% Ye
+    th_ARMAX_hat = MASS::ginv(Phie_ext) %*% YeARMAX
 
     # --- stop conditions
     dlt1[i] = sqrt(sum((th_ARMAX_hat - th_ARMAX_hat0)^2))
@@ -65,7 +66,7 @@ estimate.armax = function (model, Y, U, niter = 10) {
 
     # calculate error and pad zeros for the initial conditions
     ee_s = ee_s1
-    ee_s1 = c(rep(0,p-1),Ye - (Phie_ext %*% th_ARMAX_hat)[,])
+    ee_s1 = c(rep(0,p-1),YeARMAX - (Phie_ext %*% th_ARMAX_hat)[,])
     dlt2[i] = sqrt(sum((ee_s1 - ee_s)^2))
 
     # save estimated vectors
