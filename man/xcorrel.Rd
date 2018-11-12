@@ -4,7 +4,7 @@
 \alias{xcorrel}
 \title{Plot correlation based tests}
 \usage{
-xcorrel(e, u)
+xcorrel(e, u, nl)
 }
 \description{
 See Billings book, chapter 5
