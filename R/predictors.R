@@ -203,7 +203,7 @@ oneStepAhead.annts = function (model, y, ...) {
   time = p:N
   e = y[p:N] - yh
   y = y[p:N]
-  yh = tibble(time,y,yh,e)
+  yh = data.frame(time,y,yh,e)
 
   return(yh)
 }
@@ -230,7 +230,7 @@ freeRun.annts = function (model, y, ...) {
   e = y[p:N] - yh
   y = y[p:N]
 
-  yh = tibble(time,y,yh,e)
+  yh = data.frame(time,y,yh,e)
 
   return(yh)
 }
@@ -260,7 +260,7 @@ kStepAhead.annts = function (model, y, K) {
 
   y = y[(p+K-1):N]
   e = y - yh
-  yh = tibble(time,y,yh,e)
+  yh = data.frame(time,y,yh,e)
 
   return(yh)
 }
