@@ -1,7 +1,6 @@
 # Box-Jenkins furnace example
-clearWorkspace()
-set.seed(42) # allows reproducibility
 library(narmax)
+clearWorkspace()
 
 u = scan("../data/ts22.dat")
 y = scan("../data/ts23.dat")

@@ -1,4 +1,4 @@
-# example from the textbook. Billings, S.A. 2013
+# example 3.7 from the textbook. Billings, S.A. 2013 (p. 87)
 library(narmax)
 clearWorkspace()
 

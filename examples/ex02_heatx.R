@@ -1,4 +1,4 @@
-# example from the textbook. Billings, S.A. 2013
+# example 02 - data ftp://ftp.esat.kuleuven.be/pub/SISTA/data/thermic/heating_system.txt
 library(narmax)
 clearWorkspace()
 

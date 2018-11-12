@@ -1,3 +1,4 @@
+# example 01 - simulated armax system
 library(narmax)
 clearWorkspace()
 set.seed(42) # allows reproducibility
