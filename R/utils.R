@@ -3,7 +3,7 @@
 #' @description Clear the workspace (Actually just a rdoxygen example)
 #' @export
 clearWorkspace = function () {
-  rm(list=ls())
+  rm(list = ls(envir = .GlobalEnv),envir = .GlobalEnv)
   cat('\014')
   while (!is.null(dev.list())) dev.off()
 }
