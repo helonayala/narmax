@@ -37,8 +37,8 @@ xcorrel = function(e,u,nl) {
                                latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi}(\\tau)$'),
                                latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi^2}(\\tau)$'))
     },
-    { # 3 nonlinear ts
-      df = data.frame() # WIP
+    { # 3 undefined
+      df = NULL
     })
 
   g = ggplot2::ggplot(df) +
@@ -52,3 +52,42 @@ xcorrel = function(e,u,nl) {
 
   return(g)
 }
+
+#' @title Plot correlation based tests
+#'
+#' @description See Billings book, chapter 5
+#' @export
+xcorrel.ts = function(e) {
+
+  maxlag = 25
+  N = length(e)
+
+  conf_factor = 1.96/sqrt(N)
+  lag_vec = -maxlag:maxlag
+
+  Ep  = e - mean(e)
+  E2p = e^2 - mean(e^2)
+
+  EpEp   = crossco(Ep,Ep,  maxlag)
+  EpE2p  = crossco(Ep,E2p, maxlag)
+  E2pE2p = crossco(E2p,E2p,maxlag)
+
+  df = tidyr::gather(data.frame(lag = -maxlag:maxlag,EpEp,EpE2p,E2pE2p),
+                     variable, measurement, -lag,factor_key = TRUE)
+
+  levels(df$variable) =  c(latex2exp::TeX('$\\phi_{\\xi\\prime\\xi\\prime}(\\tau)$'),
+                           latex2exp::TeX('$\\phi_{\\xi\\prime(\\xi^2)\\prime}(\\tau)$'),
+                           latex2exp::TeX('$\\phi_{(\\xi^2)\\prime(\\xi^2)\\prime}(\\tau)$'))
+
+  g = ggplot2::ggplot(df) +
+    ggplot2::geom_line(ggplot2::aes(x = lag, y = measurement)) + #,color = variable)) +
+    ggplot2::geom_hline(yintercept=conf_factor, linetype="dashed") + ggplot2::geom_hline(yintercept=-conf_factor, linetype="dashed") +
+    ggplot2::ylim(-1,1)  +
+    ggplot2::ylab("") +
+    ggplot2::facet_grid(~variable, scales = "free",labeller = ggplot2::label_parsed) +
+    #ggplot2::theme(strip.text.x = ggplot2::element_text(size = 20))+
+    ggplot2::theme_bw(base_size = 14)
+
+  return(g)
+}
+
