@@ -190,17 +190,27 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 #' @description Prepare function calls for output
 #' @export
 cookPlots <- function(df,R2,type) {
-  p1 = ggplot2::ggplot(data = df, ggplot2::aes(x = time)) +
-    ggplot2::geom_line(ggplot2::aes(y = y,colour="Measured")) +
-    ggplot2::geom_line(ggplot2::aes(y = yh,colour="Prediction"),linetype = "dotted") +
-    ggplot2::scale_color_manual(values = c("#000000","#999999")) +
-    ggplot2::scale_size_manual(values=c(1.5, 1,0.5))+
-    ggplot2::labs(color = '') +
-    ggplot2::theme(legend.position="bottom")+
+
+  df2 = tidyr::gather(df,variable, measurement, -time)
+
+  dfy = dplyr::filter(df2,variable %in% c("y","yh"))
+
+  dfy$label = ifelse(dfy$variable == "y", "Real", "Predicted")
+
+  p1 = ggplot2::ggplot(data = dfy) +
+    ggplot2::geom_line(ggplot2::aes(x=time, linetype=label,y = measurement)) +
     ggplot2::theme_bw() +
+    ggplot2::theme(
+      axis.text.y = ggplot2::element_text(angle = 90, hjust = 0.3),
+      axis.title.x = ggplot2::element_text(vjust = - 0.5),
+      plot.title = ggplot2::element_text(vjust = 1.5),
+      legend.title = ggplot2::element_blank(),
+      legend.key = ggplot2::element_blank(),
+      legend.text = ggplot2::element_text(size = 10),
+      legend.key.size = unit(0.5, "in"),
+      legend.position = "bottom") +
     ggplot2::ggtitle(paste0('Predictions in ',type,". R2 = ",sprintf("%0.4f",R2)))+
-    ggplot2::xlab("Time") +
-    ggplot2::ylab("Output")
+    ggplot2::xlab("Time") + ggplot2::ylab("Output")
 
   p2 = ggplot2::ggplot(data = df, ggplot2::aes(x = time)) +
     ggplot2::geom_line(ggplot2::aes(y = e)) +
