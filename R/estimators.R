@@ -177,34 +177,33 @@ estimate.ann = function (model, Y, U, lr = 1e-3, epochs = 100, batch_size = 32, 
 
 #' @title Estimate caret-NARX model
 #' @export
-estimate.caret = function (model, Y, U, trControl = NULL,grid = NULL) {
-
-  if (is.null(trControl)){
-    trControl <- caret::trainControl(
-      ## 10-fold CV
-      method = "repeatedcv",
-      number = 10,
-      ## repeated ten times
-      repeats = 10)
-  }
+estimate.caret = function (model, Y, U, trControl = NULL,tuneGrid = NULL, tuneLength = NULL) {
 
   phi = data.frame(genRegMatrix(model,Y,U)$P)
   Y   = genTarget(model,Y)
 
-  if (is.null(grid)){
-    model$mdl = caret::train(phi,Y[,1],
-                             method = model$method,
-                             trControl = trControl,
-                             verbose = TRUE,
-                             tuneLength = 5)
-  } else {
-    model$mdl = caret::train(phi,Y[,1],
-              method = model$method,
-              trControl = trControl,
-              tuneGrid = grid,
-              tuneLength = 5,
-              verbose = TRUE)
-  }
+  model$mdl = caret::train(phi,Y[,1],
+                           method = model$method,
+                           trControl = trControl,
+                           tuneGrid = tuneGrid,
+                           tuneLength = tuneLength,
+                           verbose = TRUE,
+                           metric = "Rsquared")
+
+  # if (is.null(grid)){
+  #   model$mdl = caret::train(phi,Y[,1],
+  #                            method = model$method,
+  #                            trControl = trControl,
+  #                            tuneLength = 100,
+  #                            verbose = TRUE,m)
+  # } else {
+  #   model$mdl = caret::train(phi,Y[,1],
+  #             method = model$method,
+  #             trControl = trControl,
+  #             tuneGrid = tuneGrid,
+  #             tuneLength = 5,
+  #             verbose = TRUE)
+  # }
 
   return(model)
 }
