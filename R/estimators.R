@@ -251,3 +251,36 @@ estimate.narmax = function (model, Y, U, rho_p = 1e-2, rho_n = 1.9e-6) {
 }
 
 
+#' @title Estimate caret-NARX model
+#' @export
+estimate.caret = function (model, Y, U, trControl = NULL,tuneGrid = NULL, tuneLength = NULL) {
+
+  phi = data.frame(genRegMatrix(model,Y,U)$P)
+  Y   = genTarget(model,Y)
+
+  model$mdl = caret::train(phi,Y[,1],
+                           method = model$method,
+                           trControl = trControl,
+                           tuneGrid = tuneGrid,
+                           tuneLength = tuneLength,
+                           verbose = TRUE,
+                           metric = "Rsquared")
+
+  # if (is.null(grid)){
+  #   model$mdl = caret::train(phi,Y[,1],
+  #                            method = model$method,
+  #                            trControl = trControl,
+  #                            tuneLength = 100,
+  #                            verbose = TRUE,m)
+  # } else {
+  #   model$mdl = caret::train(phi,Y[,1],
+  #             method = model$method,
+  #             trControl = trControl,
+  #             tuneGrid = tuneGrid,
+  #             tuneLength = 5,
+  #             verbose = TRUE)
+  # }
+
+  return(model)
+}
+

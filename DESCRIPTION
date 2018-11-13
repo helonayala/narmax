@@ -17,7 +17,12 @@ Imports:
     latex2exp,
     tidyverse,
     keras,
+<<<<<<< HEAD
     progress
+=======
+    progress,
+    caret
+>>>>>>> origin/caret_trial
 RoxygenNote: 6.1.1
 Encoding: UTF-8
 Suggests: 

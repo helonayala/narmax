@@ -508,6 +508,59 @@ genRegMatrix.narmax = function (model, Y, U, E) {
   return(obj)
 }
 
+
+#' @title Generates a regression matrix
+#' @description Generates a regression matrix for a ANN-NARX Model
+#' @param model ANN Model
+#' @param Y The output data vector
+#' @param U The input data vector
+#' @return Object containing:
+#' \describe{
+#'  \item{P}{Regression matrix with all terms}
+#'  \item{Pp}{Regression matrix with only process terms}
+#'  \item{Pnp}{Regression matrix without process terms}
+#' }
+#' @export
+genRegMatrix.ann = function (model, Y, U, E = NULL) {
+  oy = model$oy
+  ou = model$ou
+
+  ny = max(oy)
+  nu = max(ou)
+
+  sizeGuard(Y, U, E)
+
+  P0 = genRegMatrix(arx(ny, nu), Y, U, E)$P
+  P0[, 1:ny] = -P0[, 1:ny]
+  colnames(P0) = c(paste0("y(k-", 1:ny, ")"), paste0("u(k-", 1:nu, ")"))
+
+  finalReg = c(paste0("y(k-", oy, ")"), paste0("u(k-", ou, ")"))
+
+  P = P0[,is.element(colnames(P0),finalReg)]
+
+  obj = list()
+  obj$P = P
+  obj$Pp = obj$P
+  obj$Pnp = NULL
+  return(obj)
+}
+
+#' @title Generates a regression matrix
+#' @description Generates a regression matrix for a caret-based Model
+#' @param model any caret created model
+#' @param Y The output data vector
+#' @param U The input data vector
+#' @return Object containing:
+#' \describe{
+#'  \item{P}{Regression matrix with all terms}
+#'  \item{Pp}{Regression matrix with only process terms}
+#'  \item{Pnp}{Regression matrix without process terms}
+#' }
+#' @export
+genRegMatrix.caret = function (model, Y, U, E = NULL) {
+  return(genRegMatrix.ann(model,Y,U)) # the regression matrix is the same as in ANNs
+}
+
 #' @export
 genTarget = function (model, ...) UseMethod('genTarget')
 

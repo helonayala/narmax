@@ -50,6 +50,14 @@ predict.narmax = function (model, y, u, K = 1, ...) {
 }
 
 #' @export
+predict.caret  = function (model, y, u, K = 1, ...) {
+  cat('Running caret prediction ... ')
+  prediction = predict.default.caret(model, y, u, K)
+  cat('Done\n')
+  return(prediction)
+}
+
+#' @export
 predict.default = function (model, y, u, K, ...) {
   if (K < 0) stop('K must be greater or equal to zero')
   method = switch(
@@ -71,6 +79,18 @@ predict.default.narma = function (model, y, K, ...) {
     kStepAhead.narma
   )
   return(method(model, y, K))
+}
+
+#' @export
+predict.default.caret = function (model, y, u, K, ...) {
+  if (K < 0) stop('K must be greater or equal to zero')
+  method = switch(
+    as.character(K),
+    "1" = oneStepAhead.caret,
+    "0" = freeRun.caret,
+    kStepAhead.caret
+  )
+  return(method(model, y, u, K))
 }
 
 oneStepAhead = function (model, y, u,...) {
@@ -309,3 +329,42 @@ kStepAhead.narma = function (model, y, K) {
 
   return(out)
 }
+
+oneStepAhead.caret = function (model, y, u, ...) {
+
+  osa_inp = data.frame(genRegMatrix(model,y,u)$P)
+
+  yh = caret::predict.train(model$mdl, newdata =osa_inp)
+
+  return(yh)
+}
+
+freeRun.caret = function (model, y, u, K, ...) {
+
+  p = model$maxLag
+
+  ySlice = y[1:(p - 1)]
+  uSlice = u[1:(p - 1)]
+
+  N = length(y)
+
+  pb = progress::progress_bar$new(total = N-p+1)
+  for (k in p:N) {
+    pb$tick()
+
+    auxY = c(ySlice[(k - p + 1):(k - 1)], 0)
+    auxU = c(uSlice[(k - p + 1):(k - 1)], 0)
+    fr_input = data.frame(t(genRegMatrix(model, auxY, auxU)$P))
+    ySlice[k] = caret::predict.train(model$mdl, newdata = fr_input)
+    uSlice[k] = u[k]
+  }
+
+  return(ySlice[p:N])
+}
+
+kStepAhead.caret = function (model, y, u, K) {
+  cat('K-steap-ahead is looking into the future!!!')
+}
+
+
+
