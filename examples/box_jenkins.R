@@ -6,6 +6,7 @@ rm(list=ls())
 
 library(narmax)
 library(tidyverse)
+library(caret)
 
 library(doParallel)
 cl <- makeCluster(parallel::detectCores())
@@ -96,18 +97,22 @@ u_val = u[-ind_est]
 # mdl = caret(ny,nu,method = "svmRadial")
 # mdl = estimate(mdl,y_est,u_est,trControl = trnCtrl,grid = svmGrid)
 
-ny = 1:3
-nu = 1:2
+ny = 1:10
+nu = 1:10
 
-mdl = caret(ny,nu,method = "svmLinear3")
+mdl = caret(ny,nu,method = "glmStepAIC")
 trnCtrl = trainControl(search = "random")
 mdl = estimate(mdl,y_est,u_est,trControl = trnCtrl, tuneLength = 100)
+mdl$mdl
 
+# enet
 # rvmPoly
 # treebag
 # xgbLinear
 # gamSpline
 # svmLinear3
+# glmStepAIC
+# foba
 
 # KNN
 # ny = 1:3
