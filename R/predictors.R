@@ -128,6 +128,7 @@ oneStepAhead = function (model, y, u,...) {
       eSlice[k] = y[k] - ySlice[k]
     }
   }
+
   df = data.frame(time = p:N,
                   y = y[p:N],
                   u = u[p:N],
@@ -332,21 +333,45 @@ kStepAhead.narma = function (model, y, K) {
 
 oneStepAhead.caret = function (model, y, u, ...) {
 
+  p = model$maxLag
+  N = length(y)
+
+  type = "one-step-ahead"
+  nl = 2 # nonlinear with x
+
   osa_inp = data.frame(genRegMatrix(model,y,u)$P)
 
   yh = caret::predict.train(model$mdl, newdata =osa_inp)
 
-  return(yh)
+  df = data.frame(time = p:N,
+                  y = y[p:N],
+                  u = u[p:N],
+                  yh = yh,
+                  e = y[p:N] - yh)
+  g = xcorrel(df$e,df$u,nl)
+
+  R2 = calcR2(y[p:N],yh)
+
+  p = cookPlots(df,R2,type)
+
+  out = list(dfpred = df,
+             R2 = R2,
+             ploty = p[[1]],
+             plote = p[[2]],
+             xcorrel = g,
+             type = type)
+
+  return(out)
 }
 
 freeRun.caret = function (model, y, u, K, ...) {
 
+  type = "free-run"
   p = model$maxLag
+  N = length(y)
 
   ySlice = y[1:(p - 1)]
   uSlice = u[1:(p - 1)]
-
-  N = length(y)
 
   pb = progress::progress_bar$new(total = N-p+1)
   for (k in p:N) {
@@ -359,7 +384,22 @@ freeRun.caret = function (model, y, u, K, ...) {
     uSlice[k] = u[k]
   }
 
-  return(ySlice[p:N])
+  df = data.frame(time = p:N,
+                  y = y[p:N],
+                  u = u[p:N],
+                  yh = ySlice[p:N],
+                  e = y[p:N] - ySlice[p:N])
+
+  R2 = calcR2(y[p:N],ySlice[p:N])
+
+  p = cookPlots(df,R2,type)
+
+  out = list(dfpred = df,
+             R2 = R2,
+             ploty = p[[1]],
+             plote = p[[2]],
+             type = type)
+  return(out)
 }
 
 kStepAhead.caret = function (model, y, u, K) {
