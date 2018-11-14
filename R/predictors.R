@@ -61,14 +61,14 @@ predict.caret  = function (model, y, u, K = 1, ...) {
 predict.ann  = function (model, y, K = 1, ...) {
   cat('Running ann prediction ... ')
   prediction = predict.default.annts(model, y, K)
-  cat('Done\n')
+  cat(sprintf('Done. R2 = %0.4f\n',prediction$R2))
   return(prediction)
 }
 #' @export
 predict.annts  = function (model, y, K = 1, ...) {
   cat('Running annts prediction ... ')
   prediction = predict.default.annts(model, y, K)
-  cat('Done\n')
+  cat(sprintf('Done. R2 = %0.4f\n',prediction$R2))
   return(prediction)
 }
 
@@ -120,7 +120,20 @@ predict.default.annts = function (model, y, K, ...) {
   return(method(model, y, K))
 }
 
-oneStepAhead = function (model, y, u, ...) {
+
+#' @export
+predict.default.narma = function (model, y, K, ...) {
+  if (K < 0) stop('K must be greater or equal to zero')
+  method = switch(
+    as.character(K),
+    "1" = oneStepAhead.narma,
+    "0" = freeRun.narma,
+    kStepAhead.narma
+  )
+  return(method(model, y, K))
+}
+
+oneStepAhead = function (model, y, u,...) {
   theta = as.matrix(model$coefficients)
   e = rep(0, length(y))
   p = model$maxLag
@@ -155,7 +168,6 @@ oneStepAhead = function (model, y, u, ...) {
       eSlice[k] = y[k] - ySlice[k]
     }
   }
-
   df = data.frame(time = p:N,
                   y = y[p:N],
                   u = u[p:N],
@@ -357,7 +369,7 @@ kStepAhead.narma = function (model, y, K) {
 
   return(out)
 }
-
+ 
 oneStepAhead.caret = function (model, y, u, ...) {
 
   p = model$maxLag
@@ -420,7 +432,6 @@ freeRun.caret = function (model, y, u, K, ...) {
   R2 = calcR2(y[p:N],ySlice[p:N])
 
   p = cookPlots(df,R2,type)
-
   out = list(dfpred = df,
              R2 = R2,
              ploty = p[[1]],

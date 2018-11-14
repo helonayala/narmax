@@ -250,6 +250,21 @@ estimate.narmax = function (model, Y, U, rho_p = 1e-2, rho_n = 1.9e-6) {
   return(model)
 }
 
+#' @title Estimate ANN-ts model
+#' @export
+estimate.annts = function (model, Y, lr = 1e-3, epochs = 100, batch_size = 32, verbose = 1) {
+
+  model$mdl %>% keras::compile(
+    #optimizer = keras::optimizer_adam(lr=lr,amsgrad = TRUE,clipnorm=50),
+    optimizer = keras::optimizer_rmsprop(lr=lr),
+    loss = "mse",
+    metrics = c("mae")
+  )
+
+  train_data = genRegMatrix(model,Y)
+  train_targets = genTarget(model,Y)[,]
+
+  model$mdl %>% keras::fit(train_data, train_targets, epochs = epochs, batch_size = batch_size, verbose = verbose)
 
 #' @title Estimate caret-NARX model
 #' @export
@@ -280,26 +295,6 @@ estimate.caret = function (model, Y, U, trControl = NULL,tuneGrid = NULL, tuneLe
   #             tuneLength = 5,
   #             verbose = TRUE)
   # }
-
-  return(model)
-}
-
-#' @title Estimate ANN-ts model
-#' @export
-estimate.annts = function (model, Y, lr = 1e-3, epochs = 100, batch_size = 32, verbose = 1) {
-
-  model$mdl %>% keras::compile(
-    #optimizer = keras::optimizer_adam(lr=lr,amsgrad = TRUE,clipnorm=50),
-    optimizer = keras::optimizer_rmsprop(lr=lr),
-    loss = "mse",
-    metrics = c("mae")
-  )
-
-  train_data = genRegMatrix(model,Y)
-  train_targets = genTarget(model,Y)[,]
-
-  model$mdl %>% keras::fit(train_data, train_targets, epochs = epochs, batch_size = batch_size, verbose = verbose)
-
   return(model)
 }
 
