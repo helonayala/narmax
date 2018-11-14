@@ -3,7 +3,7 @@
 #' @description Clear the workspace (Actually just a rdoxygen example)
 #' @export
 clearWorkspace = function () {
-  rm(list=ls())
+  rm(list = ls(envir = .GlobalEnv),envir = .GlobalEnv)
   cat('\014')
   while (!is.null(dev.list())) dev.off()
 }
@@ -100,45 +100,6 @@ multisine = function(N,cuoff){
   return(u[,])
 }
 
-# #' @title PRBS signal generator (by Luis Aguirre, translated to R)
-# #'
-# #' @description generates a PRBS signal with length N and with b
-# #' bits each value is held during m sampling times.
-# #' For b=8 the PRBS will not be an m-sequence.
-# #' Luis A. Aguirre - BH 18/10/95
-# #' revision 01/02/1999
-# #' @export
-# prbs = function(N,b,m){
-#
-#   y = rep(0,N)
-#   x = runif(b) > 0.5
-#   j = 1
-#
-#   # for most cases the XOR of the last bit is with the
-#   # one before the last. The exceptions are
-#   if (b==5){
-#     j=2
-#   }
-#   else if (b==7) {
-#     j=3
-#   }
-#   else if (b==9){
-#     j=4
-#   }
-#   else if (b==10){
-#     j=3
-#   }
-#   else if (b==11){
-#     j=2
-#   }
-#
-#   for (i in 1:N/m){
-#     y[(m*(i-1)+1):(m*i)] = x[b]*rep(1,m)
-#     x = c(xor(y[m*(i-1)+1],x[b-j]), x[1:(b-1)])
-#   }
-#   return(x)
-# }
-
 #' @title ploting signal spectrum
 #'
 #' @description performs U = fft(u)/sqrt(N), and plots 20*log10(abs(U)) for f in [0,0.5] (normalized)
@@ -222,6 +183,50 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
     }
   }
 }
+
+
+#' @title Prepare plots for predict() output
+#'
+#' @description Prepare function calls for output
+#' @export
+cookPlots <- function(df,R2,type) {
+
+  df2 = tidyr::gather(df,variable, measurement, -time)
+
+  dfy = dplyr::filter(df2,variable %in% c("y","yh"))
+
+  dfy$label = ifelse(dfy$variable == "y", "Real", "Predicted")
+
+  p1 = ggplot2::ggplot(data = dfy) +
+    ggplot2::geom_line(ggplot2::aes(x=time, linetype=label,y = measurement)) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(
+      axis.text.y = ggplot2::element_text(angle = 90, hjust = 0.3),
+      axis.title.x = ggplot2::element_text(vjust = - 0.5),
+      plot.title = ggplot2::element_text(vjust = 1.5),
+      legend.title = ggplot2::element_blank(),
+      legend.key = ggplot2::element_blank(),
+      legend.text = ggplot2::element_text(size = 10),
+      legend.key.size = unit(0.5, "in"),
+      legend.position = "bottom") +
+    ggplot2::ggtitle(paste0('Predictions in ',type,". R2 = ",sprintf("%0.4f",R2)))+
+    ggplot2::xlab("Time") + ggplot2::ylab("Output")
+
+  p2 = ggplot2::ggplot(data = df, ggplot2::aes(x = time)) +
+    ggplot2::geom_line(ggplot2::aes(y = e)) +
+    ggplot2::scale_color_manual(values = c("#000000")) +
+    ggplot2::theme_bw() +
+    ggplot2::ggtitle(paste0('Error in ',type,". R2 = ",sprintf("%0.4f",R2)))+
+    ggplot2::xlab("Time") +
+    ggplot2::ylab("Error")
+
+  out = list(p1 = p1,
+             p2 = p2)
+
+  return(out)
+}
+
+
 
 
 

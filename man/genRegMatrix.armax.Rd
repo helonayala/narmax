@@ -4,7 +4,7 @@
 \alias{genRegMatrix.armax}
 \title{Generates a regression matrix}
 \usage{
-\method{genRegMatrix}{armax}(model, Y, U, E = NULL)
+\method{genRegMatrix}{armax}(model, Y, U, E)
 }
 \arguments{
 \item{model}{ARMAX Model}
