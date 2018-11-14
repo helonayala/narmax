@@ -265,6 +265,7 @@ estimate.annts = function (model, Y, lr = 1e-3, epochs = 100, batch_size = 32, v
   train_targets = genTarget(model,Y)[,]
 
   model$mdl %>% keras::fit(train_data, train_targets, epochs = epochs, batch_size = batch_size, verbose = verbose)
+}
 
 #' @title Estimate caret-NARX model
 #' @export
@@ -297,4 +298,3 @@ estimate.caret = function (model, Y, U, trControl = NULL,tuneGrid = NULL, tuneLe
   # }
   return(model)
 }
-

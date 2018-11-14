@@ -109,6 +109,18 @@ predict.default.caret = function (model, y, u, K, ...) {
 }
 
 #' @export
+predict.default.ann = function (model, y, u, K, ...) {
+  if (K < 0) stop('K must be greater or equal to zero')
+  method = switch(
+    as.character(K),
+    "1" = oneStepAhead.ann,
+    "0" = freeRun.ann,
+    kStepAhead.ann
+  )
+  return(method(model, y, u, K))
+}
+
+#' @export
 predict.default.annts = function (model, y, K, ...) {
   if (K < 0) stop('K must be greater or equal to zero')
   method = switch(
@@ -369,7 +381,7 @@ kStepAhead.narma = function (model, y, K) {
 
   return(out)
 }
- 
+
 oneStepAhead.caret = function (model, y, u, ...) {
 
   p = model$maxLag
@@ -444,27 +456,117 @@ kStepAhead.caret = function (model, y, u, K) {
   cat('K-steap-ahead is looking into the future!!!')
 }
 
+
+oneStepAhead.ann = function (model, y, u, ...) {
+  p = model$maxLag
+  N = length(y)
+  osa_inp = genRegMatrix(model,y,u)$P
+  type = "one-step-ahead"
+  nl = 2 # nonlinear with x
+
+  yh = keras::predict_on_batch(model$mdl, x = osa_inp)[,]
+
+  df = data.frame(time = p:N,
+                  y = y[p:N],
+                  u = u[p:N],
+                  yh = yh,
+                  e = y[p:N] - yh)
+  g = xcorrel(df$e,df$u,nl)
+
+  R2 = calcR2(y[p:N],yh)
+
+  p = cookPlots(df,R2,type)
+
+  out = list(dfpred = df,
+             R2 = R2,
+             ploty = p[[1]],
+             plote = p[[2]],
+             xcorrel = g,
+             type = type)
+
+  return(out)
+}
+
+freeRun.ann = function (model, y, u, K, ...) {
+
+  p = model$maxLag
+
+  ySlice = y[1:(p - 1)]
+  uSlice = u[1:(p - 1)]
+
+  N = length(y)
+
+  pb = progress::progress_bar$new(total = N-p+1)
+  for (k in p:N) {
+    # svMisc::progress(k/N*100, progress.bar = TRUE)
+    pb$tick()
+
+    auxY = c(ySlice[(k - p + 1):(k - 1)], 0)
+    auxU = c(uSlice[(k - p + 1):(k - 1)], 0)
+    fr_input = genRegMatrix(model, auxY, auxU)$P
+    ySlice[k] = keras::predict_on_batch(model$mdl, x = t(fr_input))
+    uSlice[k] = u[k]
+  }
+
+  df = data.frame(time = p:N,
+                  y = y[p:N],
+                  u = u[p:N],
+                  yh = ySlice[p:N],
+                  e = y[p:N] - ySlice[p:N])
+
+  R2 = calcR2(y[p:N],ySlice[p:N])
+
+  p = cookPlots(df,R2,type)
+
+  out = list(dfpred = df,
+             R2 = R2,
+             ploty = p[[1]],
+             plote = p[[2]],
+             type = type)
+  return(out)
+}
+
+
+kStepAhead.ann = function (model, y, u, K) {
+  cat('K-steap-ahead is looking into the future!!!')
+}
+
 oneStepAhead.annts = function (model, y, ...) {
 
   p = model$maxLag
   N = length(y)
+  type = "one-step-ahead"
 
   osa_inp = genRegMatrix(model,y)
 
   yh = keras::predict_on_batch(model$mdl, x = osa_inp)[,]
 
-  time = p:N
-  e = y[p:N] - yh
-  y = y[p:N]
-  yh = data.frame(time,y,yh,e)
+  df = data.frame(time = p:N,
+                  y = y[p:N],
+                  yh = yh,
+                  e = y[p:N] - yh)
 
-  return(yh)
+  g = xcorrel.ts(df$e)
+
+  R2 = calcR2(y[p:N],yh)
+
+  p = cookPlots(df,R2,type)
+
+  out = list(dfpred = df,
+             R2 = R2,
+             ploty = p[[1]],
+             plote = p[[2]],
+             xcorrel = g,
+             type = type)
+
+  return(out)
 }
 
 freeRun.annts = function (model, y, ...) {
 
   p = model$maxLag
 
+  type = "free-run"
   ySlice = y[1:(p - 1)]
 
   N = length(y)
@@ -478,21 +580,29 @@ freeRun.annts = function (model, y, ...) {
     ySlice[k] = keras::predict_on_batch(model$mdl, x = t(fr_input))
   }
 
-  time = p:N
-  yh = ySlice[p:N]
-  e = y[p:N] - yh
-  y = y[p:N]
+  df = data.frame(time = p:N,
+                  y = y[p:N],
+                  yh = ySlice[p:N],
+                  e = y[p:N] - ySlice[p:N])
 
-  yh = data.frame(time,y,yh,e)
+  R2 = calcR2(y[p:N],ySlice[p:N])
 
-  return(yh)
+  p = cookPlots(df,R2,type)
+
+  out = list(dfpred = df,
+             R2 = R2,
+             ploty = p[[1]],
+             plote = p[[2]],
+             type = type)
+  return(out)
+
 }
-
 
 kStepAhead.annts = function (model, y, K) {
 
   p = model$maxLag
   N = length(y)
+  type = paste0(K,"-steps ahead")
 
   pb = progress::progress_bar$new(total = N-p-K+2)
 
@@ -511,9 +621,21 @@ kStepAhead.annts = function (model, y, K) {
     yh[k-p+1] = ySlice[p + K - 1]
   }
 
-  y = y[(p+K-1):N]
-  e = y - yh
-  yh = data.frame(time,y,yh,e)
-
   return(yh)
+  df = data.frame(time = (p+K-1):N,
+                  y = y[(p+K-1):N],
+                  yh = yh,
+                  e = y[(p+K-1):N] - yh)
+
+  R2 = calcR2(df$y,df$yh)
+
+  p = cookPlots(df,R2,type)
+
+  out = list(dfpred = df,
+             R2 = R2,
+             ploty = p[[1]],
+             plote = p[[2]],
+             type = type)
+
+  return(out)
 }
