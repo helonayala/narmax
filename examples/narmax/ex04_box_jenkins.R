@@ -2,8 +2,8 @@
 library(narmax)
 clearWorkspace()
 
-u = scan("../data/ts22.dat")
-y = scan("../data/ts23.dat")
+u = scan("../../data/ts22.dat")
+y = scan("../../data/ts23.dat")
 
 smax_inp = 1.2*max(u)
 smax_out = 1.2*max(y)
