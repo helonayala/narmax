@@ -51,7 +51,7 @@ predict.narmax = function (model, y, u, K = 1, ...) {
 
 #' @export
 predict.caret  = function (model, y, u, K = 1, ...) {
-  cat('Running caret prediction ... ')
+  cat('Running caret prediction ... \n')
   prediction = predict.default.caret(model, y, u, K)
   cat(sprintf('Done. R2 = %0.4f\n',prediction$R2))
   return(prediction)
@@ -59,14 +59,14 @@ predict.caret  = function (model, y, u, K = 1, ...) {
 
 #' @export
 predict.ann  = function (model, y, u, K = 1, ...) {
-  cat('Running ann prediction ... ')
+  cat('Running ann prediction ... \n')
   prediction = predict.default.ann(model, y, u, K)
   cat(sprintf('Done. R2 = %0.4f\n',prediction$R2))
   return(prediction)
 }
 #' @export
 predict.annts  = function (model, y, K = 1, ...) {
-  cat('Running annts prediction ... ')
+  cat('Running annts prediction ... \n')
   prediction = predict.default.annts(model, y, K)
   cat(sprintf('Done. R2 = %0.4f\n',prediction$R2))
   return(prediction)

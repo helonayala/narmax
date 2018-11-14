@@ -2,7 +2,7 @@
 library(narmax)
 clearWorkspace()
 
-y = scan("../data/data_chen.csv")
+y = scan("../../data/data_chen.csv")
 
 # define model structure --------------------------------------------------
 rho_p = 1e-2

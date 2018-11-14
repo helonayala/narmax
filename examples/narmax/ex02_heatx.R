@@ -3,7 +3,7 @@ library(narmax)
 clearWorkspace()
 
 # read input/output data --------------------------------------------------
-data = matrix(scan("../data/heating_system.dat"),
+data = matrix(scan("../../data/heating_system.dat"),
                nrow=801,
                byrow=TRUE)
 N = nrow(data) # number of samples

@@ -3,7 +3,7 @@ library(narmax)
 clearWorkspace()
 
 # 1749 - 2017 monthly data
-A = as.matrix(read.table("../data/sunspot.data",header = FALSE)) # 2
+A = as.matrix(read.table("../../data/sunspot.data",header = FALSE)) # 2
 nlc = dim(A)
 
 y = as.vector(t(A[,-1]))#,ncol = nlc[1]*(nlc[2]-1),nrow = 1)
