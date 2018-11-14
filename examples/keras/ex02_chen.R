@@ -1,45 +1,25 @@
-#
-# # Clear plots
-# if(!is.null(dev.list())) dev.off()
-#
-# # Clear console
-# cat("\014")
-# # Clean workspace
-# rm(list=ls())
 
 library(narmax)
-library(forecast) # for some data analysis
-library(tidyverse)
+# library(forecast) # for some data analysis
 set.seed(123)
+clearWorkspace()
 
-y  = as.numeric(read.csv("../data/data_chen.csv",header=FALSE)$V1)
+y  = as.numeric(read.csv("../../data/data_chen.csv",header=FALSE)$V1)
 y2 = (y - min(y))/(max(y)-min(y))
 n  = length(y2)
 
-ggAcf(y2, lag.max = 50)
-ggAcf(diff(y2), lag.max = 50)
-ts.plot(y2)
+# ggAcf(y2, lag.max = 50)
+# ggAcf(diff(y2), lag.max = 50)
+# ts.plot(y2)
+# gglagplot(y2,lags = 30)
 
-gglagplot(y2,lags = 30)
-
-mdl = annts(1:18,c(75,75),"sigmoid") # order from Chen paper
-
-mdl = estimate(mdl,y2, lr = 1e-4, epochs = 100, batch_size = 2, verbose = 1)
-
+mdl = annts(1:18,c(75,75),"sigmoid") # order from Chen paper: 1:13
+mdl = estimate(mdl,y2, lr = 1e-3, epochs = 100, batch_size = 2, verbose = 1)
 # perform many predictions
-nsteps = 3
-Y = list()
-g = list()
-R2 = rep(0,nsteps)
-for (i in 1:nsteps) {
-  Y[[i]] = predict(mdl,y2,K = i) # i-step  ahead
-  R2[i] = calcR2(Y[[i]]$y,Y[[i]]$yh)
-  g[[i]] = ggplot(Y[[i]] %>% gather(variable,measurement,-time)) +
-           geom_line(aes(x=time,y=measurement,color=variable)) +
-           ggtitle(paste(i,"-steps ahead R2",R2[i]))
-}
+P1 = predict(mdl,y2,K = 1)
+P2 = predict(mdl,y2,K = 2)
+P3 = predict(mdl,y2,K = 3)
 
-g
-
-checkresiduals(Y[[1]]$e)
-
+plot(P1$ploty)
+plot(P1$xcorrel)
+plot(P3$ploty)

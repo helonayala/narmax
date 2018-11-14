@@ -1,6 +1,8 @@
 library(narmax)
 library(tidyverse)
 
+clearWorkspace()
+
 set.seed(0)
 
 # load data from the bouc wen benchmark
@@ -35,9 +37,9 @@ mdl = estimate(mdl,ye1,ue1,lr = 1e-4, epochs = 200, batch_size = 128, verbose = 
 # PREDICITONS - estimation phase
 Pe1 = predict(mdl,ye1,ue1,K = 1) # one-step-ahead
 Pe0 = predict(mdl,ye1,ue1,K = 0) # free-run
-Pa1 = predict(mdl,y,  ue1,K = 1) # one-step-ahead
-Pa0 = predict(mdl,y,  ue1,K = 0) # free-run
+Pa0 = predict(mdl,y,  u,  K = 0) # free-run
 
-
+plot(Pe1$xcorrel)
+plot(Pa0$ploty)
 
 

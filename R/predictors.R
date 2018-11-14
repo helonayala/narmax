@@ -58,9 +58,9 @@ predict.caret  = function (model, y, u, K = 1, ...) {
 }
 
 #' @export
-predict.ann  = function (model, y, K = 1, ...) {
+predict.ann  = function (model, y, u, K = 1, ...) {
   cat('Running ann prediction ... ')
-  prediction = predict.default.annts(model, y, K)
+  prediction = predict.default.ann(model, y, u, K)
   cat(sprintf('Done. R2 = %0.4f\n',prediction$R2))
   return(prediction)
 }
@@ -490,6 +490,7 @@ oneStepAhead.ann = function (model, y, u, ...) {
 freeRun.ann = function (model, y, u, K, ...) {
 
   p = model$maxLag
+  type = "free-run"
 
   ySlice = y[1:(p - 1)]
   uSlice = u[1:(p - 1)]
@@ -621,7 +622,6 @@ kStepAhead.annts = function (model, y, K) {
     yh[k-p+1] = ySlice[p + K - 1]
   }
 
-  return(yh)
   df = data.frame(time = (p+K-1):N,
                   y = y[(p+K-1):N],
                   yh = yh,
