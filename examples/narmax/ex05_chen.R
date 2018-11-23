@@ -24,6 +24,8 @@ P3  = predict(mdl, y, K = 3)
 P10 = predict(mdl, y, K = 10) # takes a while to run ( we welcome parallelization :) )
 
 # plot predictions/residuals ----------------------------------------------
+print(P1$ploty)
+print(P2$ploty)
 print(P10$ploty)
 print(P1$xcorrel) # validate with correlation-based tests
 
