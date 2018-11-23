@@ -207,7 +207,7 @@ cookPlots <- function(df,R2,type) {
       legend.title = ggplot2::element_blank(),
       legend.key = ggplot2::element_blank(),
       legend.text = ggplot2::element_text(size = 10),
-      legend.key.size = unit(0.5, "in"),
+      # legend.key.size = unit(0.5, "in"),
       legend.position = "bottom") +
     ggplot2::ggtitle(paste0('Predictions in ',type,". R2 = ",sprintf("%0.4f",R2)))+
     ggplot2::xlab("Time") + ggplot2::ylab("Output")
