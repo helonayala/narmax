@@ -1,12 +1,3 @@
-#' @title Clear Workspace
-#'
-#' @description Clear the workspace (Actually just a rdoxygen example)
-#' @export
-clearWorkspace = function () {
-  rm(list = ls(envir = .GlobalEnv),envir = .GlobalEnv)
-  cat('\014')
-  while (!is.null(dev.list())) dev.off()
-}
 
 #' @title Subset matrix
 #' @description Subset a matrix like mat[rows, cols]. Return a matrix even when the
@@ -45,83 +36,31 @@ findTermIndexes = function (P, terms) {
   return(indexes)
 }
 
-#' @title Decibel
-#'
-#' @description See https://en.wikipedia.org/wiki/Decibel
-#' @param X input
-#' @return db, X in db
+#' @title Calculate normalized cross-correlation of 2 signals
+#' Constructed on the basis of the code provided by Norgaard, Ravn, Poulsen and Hansen: https://www.mathworks.com/matlabcentral/fileexchange/87-nnsysid
+#' @description See Billings book, chapter 5
 #' @export
-db = function(X) {
+crossco = function(v,w,maxlag){
+  v = v-mean(v)
+  w = w-mean(w)
 
-  db = 20*log10(abs(X))
+  nvw = length(v)
 
-  return(db)
+  normcoef = sqrt(sum(v*v)*sum(w*w))
+  coefs = rep(0,maxlag+1)
+  for (k in 0:maxlag){
+    coefs[k+1] = sum(v[1:(nvw-k)]*w[(k+1):nvw])/normcoef
+  }
+
+  coefs2 = rep(0,maxlag)
+  for(k in 1:maxlag){
+    coefs2[k] = sum(w[1:(nvw-k)]*v[(k+1):nvw])/normcoef
+  }
+  coefs = c(rev(coefs2),coefs)
+
+  return(coefs)
 }
 
-#' @title Generate filtered random noise signal excitation signal
-#'
-#' @description Filters N-normally distributed samples with a defined cut-off frequency
-#'
-#' Ref.: Schoukens, Johan, Rik Pintelon, and Yves Rolain. Mastering system identification in 100 exercises. John Wiley & Sons, 2012.
-#' @param N number of samples
-#' @param cutoff cutoff normalized frequency
-#' @return u, excitation signal
-#' @export
-randnoise = function(N,cutoff){
-
-  bf = signal::butter(6, cutoff, type="low")
-  u  = signal::filter(bf, rnorm(N,mean=0,sd=1))
-
-  return (as.numeric(u))
-}
-
-#' @title Generate multisine excitation signal
-#'
-#' @description Ref.: Schoukens, Johan, Rik Pintelon, and Yves Rolain. Mastering system identification in 100 exercises. John Wiley & Sons, 2012.
-#' @param N number of samples
-#' @param cutoff cutoff frequency (normalized)
-#' @return u, excitation signal
-#' @export
-multisine = function(N,cuoff){
-
-  # number of sines
-  Ns = round(N*cutoff)
-  # normalized frequencies
-  f = (0:(N-1))/N
-
-  # create ifft argument
-  U = matrix(0,N,1)
-  U[2:(Ns+1)] = exp(1i*2*pi*runif(Ns))
-
-  # perform ifft
-  u = 2*Re(signal::ifft(U))
-  u = u/sd(u)
-
-  return(u[,])
-}
-
-#' @title ploting signal spectrum
-#'
-#' @description performs U = fft(u)/sqrt(N), and plots 20*log10(abs(U)) for f in [0,0.5] (normalized)
-#' @param u input vector to be analyzed
-#' @examples
-#' t=seq(from = 0, to = 400*2*pi, by = 0.01)
-#' t = t[1:2^14]
-#' u=sin(2*pi*t)
-#' M_spec(u)
-#' @export
-M_spec = function(u){
-
-  N = length(u)
-
-  U = stats::fft(u)
-
-  U = U[1:round(N/2)]/sqrt(N)
-
-  f = ( (1:round(N/2)) - 1)/N
-
-  plot(f,db(U),xlab =  'Frequency (normalized)', ylab =  'Amplitude (dB)')
-}
 
 #' @title Calculate R2
 #'
@@ -137,53 +76,6 @@ calcR2 = function(real,est){
   R2 = 1 - SSE / sum2
   return(R2)
 }
-
-#' @title Multiple plot function
-#'
-#' @description Taken from http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2::ggplot2)/
-#' ggplot2::ggplot objects can be passed in ..., or to plotlist (as a list of ggplot2::ggplot objects)
-#' - cols:   Number of columns in layout
-#' - layout: A matrix specifying the layout. If present, 'cols' is ignored.
-#' If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
-#' then plot 1 will go in the upper left, 2 will go in the upper right, and
-#' 3 will go all the way across the bottom.
-#' @export
-multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
-  library(grid)
-
-  # Make a list from the ... arguments and plotlist
-  plots <- c(list(...), plotlist)
-
-  numPlots = length(plots)
-
-  # If layout is NULL, then use 'cols' to determine layout
-  if (is.null(layout)) {
-    # Make the panel
-    # ncol: Number of columns of plots
-    # nrow: Number of rows needed, calculated from # of cols
-    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-                     ncol = cols, nrow = ceiling(numPlots/cols))
-  }
-
-  if (numPlots==1) {
-    print(plots[[1]])
-
-  } else {
-    # Set up the page
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-
-    # Make each plot, in the correct location
-    for (i in 1:numPlots) {
-      # Get the i,j matrix positions of the regions that contain this subplot
-      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-
-      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
-                                      layout.pos.col = matchidx$col))
-    }
-  }
-}
-
 
 #' @title Prepare plots for predict() output
 #'
@@ -207,7 +99,7 @@ cookPlots <- function(df,R2,type) {
       legend.title = ggplot2::element_blank(),
       legend.key = ggplot2::element_blank(),
       legend.text = ggplot2::element_text(size = 10),
-      legend.key.size = unit(0.5, "in"),
+      #legend.key.size = unit(0.5, "in"),
       legend.position = "bottom") +
     ggplot2::ggtitle(paste0('Predictions in ',type,". R2 = ",sprintf("%0.4f",R2)))+
     ggplot2::xlab("Time") + ggplot2::ylab("Output")
@@ -224,6 +116,99 @@ cookPlots <- function(df,R2,type) {
              p2 = p2)
 
   return(out)
+}
+
+#' @title Plot correlation based tests
+#'
+#' @description See Billings book, chapter 5
+#' @export
+xcorrel = function(e,u,nl) {
+
+  maxlag = 25
+  N = length(u)
+
+  conf_factor = 1.96/sqrt(N)
+  lag_vec = -maxlag:maxlag
+
+  EE = crossco(e,e,maxlag)
+  UE = crossco(u,e,maxlag)
+  EEU = crossco(e[1:(N-1)],e[2:N]*u[2:N],maxlag)
+  U2E = crossco(u^2 - mean(u^2),e,maxlag)
+  U2E2 = crossco(u^2 - mean(u^2),e^2,maxlag)
+
+  df1 = tidyr::gather(data.frame(lag = -maxlag:maxlag,EE,UE),
+                      variable, measurement, -lag,factor_key = TRUE)
+  df2 = tidyr::gather(data.frame(lag = 0:maxlag, EEU = EEU[(maxlag+1):(2*maxlag+1)]),
+                      variable, measurement, -lag,factor_key = TRUE)
+  df3 = tidyr::gather(data.frame(lag = -maxlag:maxlag,U2E,U2E2),
+                      variable, measurement, -lag,factor_key = TRUE)
+
+  switch(nl,
+         { # 1 linear with X
+           df = rbind(df1)
+           levels(df$variable) =  c(latex2exp::TeX('$\\phi_{\\xi\\xi}(\\tau)$'),
+                                    latex2exp::TeX('$\\phi_{u\\xi}(\\tau)$'))
+         },
+         { # 2 nonlinear with x
+           df = rbind(df1,df2,df3)
+           levels(df$variable) =  c(latex2exp::TeX('$\\phi_{\\xi\\xi}(\\tau)$'),
+                                    latex2exp::TeX('$\\phi_{u\\xi}(\\tau)$'),
+                                    latex2exp::TeX('$\\phi_{\\xi(\\xi u)}(\\tau)$'),
+                                    latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi}(\\tau)$'),
+                                    latex2exp::TeX('$\\phi_{(u^2)\\prime \\xi^2}(\\tau)$'))
+         },
+         { # 3 undefined
+           df = NULL
+         })
+
+  g = ggplot2::ggplot(df) +
+    ggplot2::geom_line(ggplot2::aes(x = lag, y = measurement)) + #,color = variable)) +
+    ggplot2::geom_hline(yintercept=conf_factor, linetype="dashed") + ggplot2::geom_hline(yintercept=-conf_factor, linetype="dashed") +
+    ggplot2::ylim(-1,1)  +
+    ggplot2::ylab("") +
+    ggplot2::facet_grid(~variable, scales = "free",labeller = ggplot2::label_parsed) +
+    #ggplot2::theme(strip.text.x = ggplot2::element_text(size = 20))+
+    ggplot2::theme_bw(base_size = 14)
+
+  return(g)
+}
+
+#' @title Plot correlation based tests
+#'
+#' @description See Billings book, chapter 5
+#' @export
+xcorrel.ts = function(e) {
+
+  maxlag = 25
+  N = length(e)
+
+  conf_factor = 1.96/sqrt(N)
+  lag_vec = -maxlag:maxlag
+
+  Ep  = e - mean(e)
+  E2p = e^2 - mean(e^2)
+
+  EpEp   = crossco(Ep,Ep,  maxlag)
+  EpE2p  = crossco(Ep,E2p, maxlag)
+  E2pE2p = crossco(E2p,E2p,maxlag)
+
+  df = tidyr::gather(data.frame(lag = -maxlag:maxlag,EpEp,EpE2p,E2pE2p),
+                     variable, measurement, -lag,factor_key = TRUE)
+
+  levels(df$variable) =  c(latex2exp::TeX('$\\phi_{\\xi\\prime\\xi\\prime}(\\tau)$'),
+                           latex2exp::TeX('$\\phi_{\\xi\\prime(\\xi^2)\\prime}(\\tau)$'),
+                           latex2exp::TeX('$\\phi_{(\\xi^2)\\prime(\\xi^2)\\prime}(\\tau)$'))
+
+  g = ggplot2::ggplot(df) +
+    ggplot2::geom_line(ggplot2::aes(x = lag, y = measurement)) + #,color = variable)) +
+    ggplot2::geom_hline(yintercept=conf_factor, linetype="dashed") + ggplot2::geom_hline(yintercept=-conf_factor, linetype="dashed") +
+    ggplot2::ylim(-1,1)  +
+    ggplot2::ylab("") +
+    ggplot2::facet_grid(~variable, scales = "free",labeller = ggplot2::label_parsed) +
+    #ggplot2::theme(strip.text.x = ggplot2::element_text(size = 20))+
+    ggplot2::theme_bw(base_size = 14)
+
+  return(g)
 }
 
 

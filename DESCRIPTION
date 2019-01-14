@@ -12,11 +12,9 @@ LazyData: true
 Imports: 
     stringr,
     MASS,
-    signal,
     reshape2,
     latex2exp,
-    tidyverse,
-    keras,
+    ggplot2,
     progress
 RoxygenNote: 6.1.1
 Encoding: UTF-8
@@ -33,5 +31,3 @@ Collate:
     'predictors.R'
     'printers.R'
     'utils.R'
-    'xcorrel.R'
-    'crossco.R'
