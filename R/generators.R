@@ -500,11 +500,14 @@ genRegMatrix.narmax = function (model, Y, U, E) {
     ncol = sum(!errIndexes),
     dimnames = list(rownames(obj$P), colnames(obj$P)[!errIndexes]))
 
-  obj$Pnp = matrix(
-    obj$P[, errIndexes],
-    ncol = sum(errIndexes),
-    dimnames = list(rownames(obj$P), colnames(obj$P)[errIndexes]))
-
+  if (any(errIndexes)){
+    obj$Pnp = matrix(
+      obj$P[, errIndexes],
+      ncol = sum(errIndexes),
+      dimnames = list(rownames(obj$P), colnames(obj$P)[errIndexes]))
+  } else{
+    obj$Pnp = NULL
+  }
   return(obj)
 }
 
