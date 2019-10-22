@@ -1,0 +1,27 @@
+MEC 2015 - SYSID 
+Prof. Helon Ayala
+
+copyright for the owner and collaborators
+
+please do not distribute this code as it is unpublished
+
+narmax Package installation step-by-step (in R)
+
+1- Istall devtools and update it to github version
+
+> install.packages("devtools")
+> library(devtools)
+> devtools::install_github("r-lib/devtools")
+
+2- install package dependencies 
+> install.packages(c("roxygen2","reshape2","latex2exp","tidyverse","keras","progress","signal"))
+
+3- A further step is needed to configure keras/tensorflow
+> library(keras)
+> install_keras()
+
+4- Open the namarx.Rproj file
+
+Ctrl + Shift + B: build package
+
+5- happy coding! start by the "vignettes" folder
