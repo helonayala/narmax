@@ -1,10 +1,12 @@
-# narmax
-narmax system identification
+# An R library for nonlinear black-box system identification
 
-![sys id](https://github.com/helonayala/narmax/blob/master/gitimg.png)
+For details please see and cite, if you use, the following publication
 
-following notation from billings 2013 book
+https://doi.org/10.1016/j.softx.2020.100495
 
-https://www.wiley.com/en-us/Nonlinear+System+Identification%3A+NARMAX+Methods+in+the+Time%2C+Frequency%2C+and+Spatio+Temporal+Domains-p-9781119943594
+Ayala, H. V. H., Gritti, M. and Coelho, L. S. An R library for nonlinear black-box system identification. SoftwareX, 2020 (to appear).
 
-implementations for linear and nonlinear algorithms, including examples from the book
+# Pull requests
+
+A list of desired features can be found in the paper. They are all pending :)
+
