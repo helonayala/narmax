@@ -25,6 +25,5 @@ P1 <- predict(mdl, y, u, K = 1)
 
 # plot predictions/residuals ----------------------------------------------
 print(P1$xcorrel) # validate with correlation-based tests
-ggsave("D:/Google Drive/Trabalho/Publicacoes/2018 JSS - narmax toolbox/paper/fig/ex1xcorrel.png", width=9, height=3)
 
 
