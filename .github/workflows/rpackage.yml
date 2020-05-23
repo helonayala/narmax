@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build & Test R package
+      run: |
+        echo Building R package ...
+        echo Testing R package ...
+        
+    - name: Semantic versioning
+      run: |
+        echo Bumping version ...
+        echo Pushing tags ...
+
+    - name: Deploy to CRAN ...
+      run: |
+        echo Deploying package ...
